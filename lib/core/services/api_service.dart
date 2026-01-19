@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:suguna_teachers_app/core/constants/app_constants.dart';
+import 'package:suguna_assignment_app/core/constants/app_constants.dart';
 
 class ApiService {
   late Dio _dio;

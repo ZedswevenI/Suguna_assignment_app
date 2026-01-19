@@ -1,100 +1,79 @@
-import 'package:go_router/go_router.dart';
-import 'package:suguna_teachers_app/core/routes/app_routes.dart';
-import 'package:suguna_teachers_app/modules/home/bindings/home_binding.dart';
-import 'package:suguna_teachers_app/modules/home/views/home_view.dart';
-import 'package:suguna_teachers_app/modules/timetable/bindings/timetable_binding.dart';
-import 'package:suguna_teachers_app/modules/timetable/views/timetable_view.dart';
-import 'package:suguna_teachers_app/modules/batch_control/bindings/batch_control_binding.dart';
-import 'package:suguna_teachers_app/modules/batch_control/views/batch_control_view.dart';
-import 'package:suguna_teachers_app/modules/student_performance_report/bindings/student_performance_report_binding.dart';
-import 'package:suguna_teachers_app/modules/student_performance_report/views/student_performance_report_view.dart';
-import 'package:suguna_teachers_app/modules/batch_performance_report/bindings/batch_performance_report_binding.dart';
-import 'package:suguna_teachers_app/modules/batch_performance_report/views/batch_performance_report_view.dart';
-import 'package:suguna_teachers_app/modules/assignment_control/bindings/assignment_control_binding.dart';
-import 'package:suguna_teachers_app/modules/assignment_control/views/assignment_control_view.dart';
-import 'package:suguna_teachers_app/modules/phase_plan/bindings/phase_plan_binding.dart';
-import 'package:suguna_teachers_app/modules/phase_plan/views/phase_plan_view.dart';
-import 'package:suguna_teachers_app/modules/my_library/bindings/my_library_binding.dart';
-import 'package:suguna_teachers_app/modules/my_library/views/my_library_view.dart';
-import 'package:suguna_teachers_app/modules/attendance/bindings/attendance_binding.dart';
-import 'package:suguna_teachers_app/modules/attendance/views/attendance_view.dart';
+import 'package:get/get.dart';
+import 'package:suguna_assignment_app/core/routes/app_routes.dart';
+import 'package:suguna_assignment_app/modules/home_assignments/bindings/home_assignments_binding.dart';
+import 'package:suguna_assignment_app/modules/home_assignments/views/home_assignments_view.dart';
+import 'package:suguna_assignment_app/modules/topic_assignments/bindings/topic_assignments_binding.dart';
+import 'package:suguna_assignment_app/modules/topic_assignments/views/topic_assignments_view.dart';
+import 'package:suguna_assignment_app/modules/assignment_instructions/bindings/assignment_instructions_binding.dart';
+import 'package:suguna_assignment_app/modules/assignment_instructions/views/assignment_instructions_view.dart';
+import 'package:suguna_assignment_app/modules/test_player/bindings/test_player_binding.dart';
+import 'package:suguna_assignment_app/modules/test_player/views/test_player_view.dart';
+import 'package:suguna_assignment_app/modules/test_analysis/bindings/test_analysis_binding.dart';
+import 'package:suguna_assignment_app/modules/test_analysis/views/test_analysis_view.dart';
+import 'package:suguna_assignment_app/modules/question_review/bindings/question_review_binding.dart';
+import 'package:suguna_assignment_app/modules/question_review/views/question_review_view.dart';
+import 'package:suguna_assignment_app/modules/usage/bindings/usage_binding.dart';
+import 'package:suguna_assignment_app/modules/usage/views/usage_view.dart';
+import 'package:suguna_assignment_app/modules/file_manager/bindings/file_manager_binding.dart';
+import 'package:suguna_assignment_app/modules/file_manager/views/file_manager_view.dart';
+import 'package:suguna_assignment_app/modules/discussion_list/bindings/discussion_list_binding.dart';
+import 'package:suguna_assignment_app/modules/discussion_list/views/discussion_list_view.dart';
+import 'package:suguna_assignment_app/modules/reset/bindings/reset_binding.dart';
+import 'package:suguna_assignment_app/modules/reset/views/reset_view.dart';
 
 class RouteConfig {
-  static final GoRouter router = GoRouter(
-    initialLocation: AppRoutes.home,
-    routes: [
-      GoRoute(
-        path: AppRoutes.home,
-        name: 'home',
-        builder: (context, state) {
-          HomeBinding().dependencies();
-          return const HomeView();
-        },
+  static List<GetPage> getPages() {
+    return [
+      GetPage(
+        name: AppRoutes.home,
+        page: () => const HomeAssignmentsView(),
+        binding: HomeAssignmentsBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.timetable,
-        name: 'timetable',
-        builder: (context, state) {
-          TimetableBinding().dependencies();
-          return const TimetableView();
-        },
+      GetPage(
+        name: AppRoutes.topicAssignments,
+        page: () => const TopicAssignmentsView(),
+        binding: TopicAssignmentsBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.batchControl,
-        name: 'batchControl',
-        builder: (context, state) {
-          BatchControlBinding().dependencies();
-          return const BatchControlView();
-        },
+      GetPage(
+        name: AppRoutes.assignmentInstructions,
+        page: () => const AssignmentInstructionsView(),
+        binding: AssignmentInstructionsBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.studentPerformanceReport,
-        name: 'studentPerformanceReport',
-        builder: (context, state) {
-          StudentPerformanceReportBinding().dependencies();
-          return const StudentPerformanceReportView();
-        },
+      GetPage(
+        name: AppRoutes.testPlayer,
+        page: () => const TestPlayerView(),
+        binding: TestPlayerBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.batchPerformanceReport,
-        name: 'batchPerformanceReport',
-        builder: (context, state) {
-          BatchPerformanceReportBinding().dependencies();
-          return const BatchPerformanceReportView();
-        },
+      GetPage(
+        name: AppRoutes.testAnalysis,
+        page: () => const TestAnalysisView(),
+        binding: TestAnalysisBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.assignmentControl,
-        name: 'assignmentControl',
-        builder: (context, state) {
-          AssignmentControlBinding().dependencies();
-          return const AssignmentControlView();
-        },
+      GetPage(
+        name: AppRoutes.questionReview,
+        page: () => const QuestionReviewView(),
+        binding: QuestionReviewBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.phasePlan,
-        name: 'phasePlan',
-        builder: (context, state) {
-          PhasePlanBinding().dependencies();
-          return const PhasePlanView();
-        },
+      GetPage(
+        name: AppRoutes.usage,
+        page: () => const UsageView(),
+        binding: UsageBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.myLibrary,
-        name: 'myLibrary',
-        builder: (context, state) {
-          MyLibraryBinding().dependencies();
-          return const MyLibraryView();
-        },
+      GetPage(
+        name: AppRoutes.fileManager,
+        page: () => const FileManagerView(),
+        binding: FileManagerBinding(),
       ),
-      GoRoute(
-        path: AppRoutes.attendance,
-        name: 'attendance',
-        builder: (context, state) {
-          AttendanceBinding().dependencies();
-          return const AttendanceView();
-        },
+      GetPage(
+        name: AppRoutes.discussion,
+        page: () => const DiscussionListView(),
+        binding: DiscussionListBinding(),
       ),
-    ],
-  );
+      GetPage(
+        name: AppRoutes.reset,
+        page: () => const ResetView(),
+        binding: ResetBinding(),
+      ),
+    ];
+  }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:suguna_teachers_app/core/routes/app_routes.dart';
-import 'package:suguna_teachers_app/core/theme/app_colors.dart';
+import 'package:suguna_assignment_app/core/routes/app_routes.dart';
+import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

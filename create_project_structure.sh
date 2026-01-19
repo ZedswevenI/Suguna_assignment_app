@@ -5,7 +5,7 @@
 
 set -e
 
-PROJECT_NAME="suguna_teachers_app"
+PROJECT_NAME="suguna_assignment_app"
 PROJECT_DIR="./${PROJECT_NAME}"
 
 echo "🚀 Creating Flutter project structure..."

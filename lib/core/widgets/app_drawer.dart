@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:suguna_teachers_app/core/routes/app_routes.dart';
-import 'package:suguna_teachers_app/core/theme/app_colors.dart';
-import 'package:suguna_teachers_app/core/widgets/app_text.dart';
-import 'package:suguna_teachers_app/modules/home/controllers/home_controller.dart';
+import 'package:suguna_assignment_app/core/theme/app_colors.dart';
+import 'package:suguna_assignment_app/core/widgets/app_text.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -31,7 +28,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   AppText.headlineMedium(
-                    'Teacher App',
+                    'Assignment App',
                     color: AppColors.textWhite,
                   ),
                 ],
@@ -43,18 +40,6 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _buildMenuItem(
-                  context,
-                  icon: Icons.schedule,
-                  title: 'Timetable',
-                  route: AppRoutes.timetable,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.groups,
-                  title: 'Batch Control',
-                  route: AppRoutes.batchControl,
-                ),
                 const Divider(),
                 _buildLogoutMenuItem(context),
               ],
@@ -62,32 +47,6 @@ class AppDrawer extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMenuItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String route,
-  }) {
-    final homeController = Get.find<HomeController>();
-
-    return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: AppText.bodyLarge(title),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-
-        // Change view in home controller instead of navigating
-        if (route == AppRoutes.timetable) {
-          homeController.showTimetable();
-        } else if (route == AppRoutes.batchControl) {
-          homeController.showBatchControl();
-        } else if (route == AppRoutes.home) {
-          homeController.showTimetable(); // Default to timetable
-        }
-      },
     );
   }
 
@@ -103,8 +62,6 @@ class AppDrawer extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context) {
-    final homeController = Get.find<HomeController>();
-
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -119,7 +76,7 @@ class AppDrawer extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                homeController.logout();
+                // TODO: Implement logout functionality
               },
               child: AppText.bodyMedium('Logout', color: AppColors.error),
             ),

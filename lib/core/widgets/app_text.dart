@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:suguna_teachers_app/core/theme/app_colors.dart';
+import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 
 class AppText extends StatelessWidget {
   final String text;

@@ -1,4 +1,4 @@
-# suguna_teachers_app
+# Suguna Assignment App
 
 A new Flutter project.
 

@@ -1,6 +1,6 @@
 {
-    "name": "suguna_teachers_app",
-    "short_name": "suguna_teachers_app",
+    "name": "Suguna Assignment App",
+    "short_name": "Suguna Assignment App",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

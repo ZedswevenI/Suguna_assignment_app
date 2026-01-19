@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:suguna_teachers_app/core/widgets/app_text.dart';
+import 'package:suguna_assignment_app/core/widgets/app_text.dart';
 
 class AppRichText extends StatelessWidget {
   final List<AppTextSpan> spans;

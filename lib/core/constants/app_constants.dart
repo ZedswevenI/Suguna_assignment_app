@@ -1,7 +1,23 @@
 class AppConstants {
-  // API Configuration
+  // API Configuration (for future use)
   static const String baseUrl = 'https://api.example.com';
   static const Duration timeout = Duration(seconds: 30);
   
-  // Add more constants as needed
+  // Layout Constants
+  static const double sidebarWidth = 220.0;
+  static const double headerHeight = 64.0;
+  static const double circleSize = 24.0;
+  static const double circleSpacing = 8.0;
+  
+  // Text Sizes
+  static const double sectionTitleSize = 18.0;
+  static const double normalTextSize = 14.0;
+  static const double smallLabelSize = 12.0;
+  
+  // Padding & Spacing
+  static const double contentPadding = 16.0;
+  static const double tightPadding = 8.0;
+  
+  // Tablet Landscape Breakpoint
+  static const double tabletBreakpoint = 768.0;
 }
