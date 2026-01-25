@@ -41,7 +41,7 @@ class RouteConfig {
       ),
       GetPage(
         name: AppRoutes.testPlayer,
-        page: () => const TestPlayerView(),
+        page: () => TestPlayerView(),
         binding: TestPlayerBinding(),
       ),
       GetPage(

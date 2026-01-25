@@ -5,6 +5,8 @@ import 'package:suguna_assignment_app/data/services/mock_data_service.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
 import 'package:suguna_assignment_app/core/widgets/score_circle.dart';
 
+import '../views/topic_assignments_view.dart';
+
 class TopicAssignmentsController extends GetxController {
   late final SubjectModel subject;
   final topics = <TopicModel>[].obs;
@@ -104,5 +106,19 @@ class TopicAssignmentsController extends GetxController {
       return CircleState.downloaded;
     }
     return CircleState.defaultState;
+  }
+
+  AssignmentStatus? getAssignmentStatus(String subtopicId, String column) {
+    final key = '$subtopicId-$column';
+    if (downloadingSubtopicIds.contains(key)) {
+      return AssignmentStatus.attempted;
+    }
+    return AssignmentStatus.notOpened;
+  }
+
+  ScoreLevel? getScoreLevel(String subtopicId, String column) {
+    return null;
+
+    // Return the score level if attempted
   }
 }
