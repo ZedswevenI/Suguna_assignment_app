@@ -3,6 +3,7 @@ import 'package:flutter_tex/flutter_tex.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_controller.dart';
 import '../../../core/theme/app_colors.dart';
+import '../controllers/test_player_parser.dart';
 
 class QuestionOptionsWidget extends StatelessWidget {
   const QuestionOptionsWidget({super.key});
@@ -34,9 +35,9 @@ class QuestionOptionsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              controller.isLatex(question.text) && question.type == QuestionType.trueFalse ? texText(question.text, fontSize: controller.getQuestionFontSize()) : Container(),
-              controller.isLatex(question.text) ? Container() : Text(
-                question.text,
+              controller.isLatex(question.questionHtml ?? "") && question.type == QuestionType.trueFalse ? texText(question.questionHtml ?? "", fontSize: controller.getQuestionFontSize()) : Container(),
+              controller.isLatex(question.questionHtml ?? "") ? Container() : Text(
+                question.questionHtml ?? "",
                 style: TextStyle(
                   fontSize: controller.getQuestionFontSize(),
                   height: 1.6,
@@ -77,12 +78,13 @@ class QuestionOptionsWidget extends StatelessWidget {
       }
   }
 
+
   // MCQ - Single Answer
   Widget _buildMCQSingle(Question question,TestPlayerController controller) {
-   return  controller.isLatex(question.text) || controller.isLatex(question.options.first) ? TeXView(style: const TeXViewStyle(
+   return  controller.isLatex(question.questionHtml ?? "") || controller.isLatex(question.options.first) ? TeXView(style: const TeXViewStyle(
       backgroundColor: Colors.transparent, padding: TeXViewPadding.all(0),),
       child: TeXViewColumn(children: [
-        TeXViewDocument(question.text, style: TeXViewStyle.fromCSS(
+        TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
           'font-size:${controller
               .getQuestionFontSize()}px; margin-bottom:16px;',),),
         ...question.options
@@ -120,14 +122,14 @@ class QuestionOptionsWidget extends StatelessWidget {
 
   // MCQ - Multiple Answer
   Widget _buildMCQMultiple(Question question,TestPlayerController controller) {
-    return controller.isLatex(question.text) ? TeXView(
+    return controller.isLatex(question.questionHtml ?? "") ? TeXView(
       style: const TeXViewStyle(
         backgroundColor: Colors.transparent,
         padding: TeXViewPadding.all(0),
       ),
       child: TeXViewColumn(
         children: [
-           TeXViewDocument( question.text, style: TeXViewStyle.fromCSS( 'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;', ), ),
+           TeXViewDocument( question.questionHtml ?? "", style: TeXViewStyle.fromCSS( 'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;', ), ),
           ...question.options.asMap().entries.map((entry) {
             final index = entry.key;
             final option = entry.value;
@@ -424,9 +426,9 @@ class QuestionOptionsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        controller.isLatex(question.text) ? TeXView(child:  TeXViewColumn(
+        controller.isLatex(question.questionHtml ?? "") ? TeXView(child:  TeXViewColumn(
             children: [
-              TeXViewDocument(question.text, style: TeXViewStyle.fromCSS(
+              TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
                 'font-size:${controller
                     .getQuestionFontSize()}px; margin-bottom:16px;',),),
               // TeXViewDocument("Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}", style: TeXViewStyle.fromCSS(
@@ -435,15 +437,15 @@ class QuestionOptionsWidget extends StatelessWidget {
             ]
         ),) : Column(
           children: [
-            // Text(
-            //   question.text,
-            //   style: TextStyle(
-            //     fontSize: controller.getQuestionFontSize(),
-            //     height: 1.6,
-            //     color: AppColors.textPrimary,
-            //     fontWeight: FontWeight.w500,
-            //   ),
-            // ),
+            Text(
+              question.questionHtml ?? "",
+              style: TextStyle(
+                fontSize: controller.getQuestionFontSize(),
+                height: 1.6,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             // Text(
             //   'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
             //   style: const TextStyle(
@@ -636,6 +638,68 @@ class QuestionOptionsWidget extends StatelessWidget {
   Widget _buildTextType(Question question) {
     return GetBuilder<TestPlayerController>(
       builder: (controller) {
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            controller.isLatex(question.questionHtml ?? "") ? TeXView(child:  TeXViewColumn(
+                children: [
+                  TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
+                    'font-size:${controller
+                        .getQuestionFontSize()}px; margin-bottom:16px;',),),
+                  // TeXViewDocument("Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}", style: TeXViewStyle.fromCSS(
+                  //   'font-size:${controller
+                  //       .getQuestionFontSize()}px; margin-bottom:16px;',),),
+                ]
+            ),) : Column(
+              children: [
+                Text(
+                  question.questionHtml ?? "",
+                  style: TextStyle(
+                    fontSize: controller.getQuestionFontSize(),
+                    height: 1.6,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                // Text(
+                //   'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
+                //   style: const TextStyle(
+                //     fontSize: 12,
+                //     fontWeight: FontWeight.w600,
+                //     color: Color(0xFF10B981),
+                //   ),
+                // ),
+              ],
+            ),
+            GetBuilder<TestPlayerController>(
+              builder: (controller) {
+                return TextField(
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    hintText: 'Enter your answer',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    contentPadding: const EdgeInsets.all(20),
+                  ),
+                  style: TextStyle(
+                    fontSize: controller.getOptionFontSize(),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  onChanged: (value) {
+                    final num = double.tryParse(value);
+                    if (num != null) {
+                      controller.setNumericalAnswer(num);
+                    }
+                  },
+                );
+              },
+            ),
+          ],
+        );
         return TextField(
           maxLines: 2,
           decoration: InputDecoration(

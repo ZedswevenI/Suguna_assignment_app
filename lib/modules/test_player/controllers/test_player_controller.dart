@@ -1,213 +1,169 @@
 
 import 'package:get/get.dart';
+import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_parser.dart';
 
 import '../../../data/models/subject_model.dart';
-
-enum QuestionType {
-  mcqSingle,
-  mcqMultiple,
-  matchTheFollowing,
-  numerical,
-  subjective,
-  trueFalse,
-  singleDropdown,
-  multiDropdown,
-  textType,
-}
-
-class MatchPair {
-  final String left;
-  final List<String> rightOptions;
-
-  MatchPair({required this.left, required this.rightOptions});
-}
-
-class QuestionCategory {
-  final String id;
-  final String name;
-  final int questionCount;
-  final List<Question> questions;
-
-  QuestionCategory({
-    required this.id,
-    required this.name,
-    required this.questionCount,
-    required this.questions,
-  });
-}
-class Question {
-  final int number;
-  final String text;
-  final QuestionType type;
-  final List<String> options;
-  final List<MatchPair>? matchPairs; // For MAQ
-  final double? minRange; // For numerical
-  final double? maxRange; // For numerical
-
-  // Answer storage
-  String? selectedAnswer; // For single select
-  List<String>? selectedAnswers; // For multiple select
-  Map<String, String>? matchAnswers; // For MAQ
-  double? numericalAnswer; // For numerical
-  String? textAnswer; // For subjective/text
-
-  QuestionStatus status;
-
-  Question({
-    required this.number,
-    required this.text,
-    required this.type,
-    this.options = const [],
-    this.matchPairs,
-    this.minRange,
-    this.maxRange,
-    this.selectedAnswer,
-    this.selectedAnswers,
-    this.matchAnswers,
-    this.numericalAnswer,
-    this.textAnswer,
-    this.status = QuestionStatus.notVisited,
-  });
-}
-enum QuestionStatus {
-  answered,
-  notAnswered,
-  markedForReview,
-  answeredAndMarked,
-  notVisited,
-}
-
 
 class TestPlayerController extends GetxController {
 
   final Rx<SubjectModel?> selectedSubject = Rx<SubjectModel?>(null);
   void updateView() => update(['palette']);
-
   final textSize = 1.obs;
+  final categories = [];
 
-  final categories = <QuestionCategory>[
-    QuestionCategory(
-      id: 'algebra',
-      name: 'Algebra',
-      questionCount: 15,
-      questions: [
-        Question(
-          number: 1,
-          text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
-          type: QuestionType.mcqSingle,
-          options: ['\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3'],
-        ),
-        Question(
-          number: 2,
-          text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
-          type: QuestionType.mcqMultiple,
-          options: ['\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4',],
-          selectedAnswers: [],
-        ),
-        Question(
-          number: 3,
-          text: 'Match the following algebraic terms with their types:',
-          type: QuestionType.matchTheFollowing,
-          matchPairs: [
-            MatchPair(left: '3x²', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-            MatchPair(left: '5', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-            MatchPair(left: '2x', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-          ],
-          matchAnswers: {},
-        ),
-        Question(
-          number: 4,
-          text: 'Ratio of any two sides of an equilateral \\(\\triangle\\) is always ____________',
-          type: QuestionType.numerical,
-          minRange: 0,
-          maxRange: 100,
-        ),
-        Question(
-          number: 5,
-          text: 'Is the equation x + 5 = 5 + x an example of commutative property?',
-          type: QuestionType.trueFalse,
-          options: ['True', 'False'],
-        ),
-        Question(
-          number: 6,
-          text: 'What is the degree of polynomial 3x³ + 2x² - 5x + 1?',
-          type: QuestionType.singleDropdown,
-          options: ['0', '1', '2', '3', '4'],
-        ),
-        Question(
-          number: 7,
-          text: 'Select all valid operations that preserve equality:',
-          type: QuestionType.multiDropdown,
-          options: ['Add same number to both sides', 'Multiply by zero', 'Divide by same non-zero number', 'Square both sides'],
-          selectedAnswers: [],
-        ),
-        Question(
-          number: 8,
-          text: 'Enter the factored form of x² - 9',
-          type: QuestionType.textType,
-        ),
-        Question(
-          number: 9,
-          text: 'Explain the steps to solve a quadratic equation using the quadratic formula.',
-          type: QuestionType.subjective,
-        ),
-        ...List.generate(6, (i) => Question(
-          number: i + 10,
-          text: 'Sample algebra question ${i + 10}',
-          type: QuestionType.mcqSingle,
-          options: ['Option A', 'Option B', 'Option C', 'Option D'],
-        )),
-      ],
-    ),
-    QuestionCategory(
-      id: 'graphs',
-      name: 'Graphs',
-      questionCount: 3,
-      questions: [
-        Question(
-          number: 16,
-          text: 'What is the slope of a horizontal line?',
-          type: QuestionType.numerical,
-          minRange: -10,
-          maxRange: 10,
-        ),
-        Question(
-          number: 17,
-          text: 'Comprehension Logarithmic Inequalities statement \\(0 < a < 1\\) \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\leq c\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\leq_{a} c a >\\) 1 \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\geq c > 0\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\geq a^{c}\\) -- * -- Question :Which one of the following is least',
-          type: QuestionType.trueFalse,
-          options: ['True', 'False'],
-        ),
-        Question(
-          number: 18,
-          text: 'Describe how to find the equation of a line given two points.',
-          type: QuestionType.subjective,
-        ),
-      ],
-    ),
-    QuestionCategory(
-      id: 'theory',
-      name: 'Theory',
-      questionCount: 2,
-      questions: [
-        Question(
-          number: 19,
-          text: 'What does the Fundamental Theorem of Algebra state?',
-          type: QuestionType.mcqSingle,
-          options: [
-            'Every polynomial has at least one root',
-            'All polynomials are factorable',
-            'Algebra is fundamental',
-            'None of the above'
-          ],
-        ),
-        Question(
-          number: 20,
-          text: 'Explain the concept of mathematical induction.',
-          type: QuestionType.subjective,
-        ),
-      ],
-    ),
-  ];
+  bool isLoading = true;
+
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Load actual API data
+    loadTestData(_getApiResponse());
+  }
+
+  // Method to load test data from API
+  void loadTestData(String jsonString) async {
+    isLoading = true;
+    updateView();
+    categories.clear();
+    categories.addAll(await TestApiParser.parseFromJsonString(jsonString));
+    isLoading = false;
+    updateView();
+  }
+
+
+
+  // Actual API response from your server
+  String _getApiResponse() {
+    return '''
+    
+    ''';
+  }
+
+  //
+  // final categories = <QuestionCategory>[
+  //   QuestionCategory(
+  //     id: 'algebra',
+  //     name: 'Algebra',
+  //     questionCount: 15,
+  //     questions: [
+  //       Question(
+  //         number: 1,
+  //         text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
+  //         type: QuestionType.mcqSingle,
+  //         options: ['\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3'],
+  //       ),
+  //       Question(
+  //         number: 2,
+  //         text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
+  //         type: QuestionType.mcqMultiple,
+  //         options: ['\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4',],
+  //         selectedAnswers: [],
+  //       ),
+  //       Question(
+  //         number: 3,
+  //         text: 'Match the following algebraic terms with their types:',
+  //         type: QuestionType.matchTheFollowing,
+  //         matchPairs: [
+  //           MatchPair(left: '3x²', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
+  //           MatchPair(left: '5', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
+  //           MatchPair(left: '2x', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
+  //         ],
+  //         matchAnswers: {},
+  //       ),
+  //       Question(
+  //         number: 4,
+  //         text: 'Ratio of any two sides of an equilateral \\(\\triangle\\) is always ____________',
+  //         type: QuestionType.numerical,
+  //         minRange: 0,
+  //         maxRange: 100,
+  //       ),
+  //       Question(
+  //         number: 5,
+  //         text: 'Is the equation x + 5 = 5 + x an example of commutative property?',
+  //         type: QuestionType.trueFalse,
+  //         options: ['True', 'False'],
+  //       ),
+  //       Question(
+  //         number: 6,
+  //         text: 'What is the degree of polynomial 3x³ + 2x² - 5x + 1?',
+  //         type: QuestionType.singleDropdown,
+  //         options: ['0', '1', '2', '3', '4'],
+  //       ),
+  //       Question(
+  //         number: 7,
+  //         text: 'Select all valid operations that preserve equality:',
+  //         type: QuestionType.multiDropdown,
+  //         options: ['Add same number to both sides', 'Multiply by zero', 'Divide by same non-zero number', 'Square both sides'],
+  //         selectedAnswers: [],
+  //       ),
+  //       Question(
+  //         number: 8,
+  //         text: 'Enter the factored form of x² - 9',
+  //         type: QuestionType.textType,
+  //       ),
+  //       Question(
+  //         number: 9,
+  //         text: 'Explain the steps to solve a quadratic equation using the quadratic formula.',
+  //         type: QuestionType.subjective,
+  //       ),
+  //       ...List.generate(6, (i) => Question(
+  //         number: i + 10,
+  //         text: 'Sample algebra question ${i + 10}',
+  //         type: QuestionType.mcqSingle,
+  //         options: ['Option A', 'Option B', 'Option C', 'Option D'],
+  //       )),
+  //     ],
+  //   ),
+  //   QuestionCategory(
+  //     id: 'graphs',
+  //     name: 'Graphs',
+  //     questionCount: 3,
+  //     questions: [
+  //       Question(
+  //         number: 16,
+  //         text: 'What is the slope of a horizontal line?',
+  //         type: QuestionType.numerical,
+  //         minRange: -10,
+  //         maxRange: 10,
+  //       ),
+  //       Question(
+  //         number: 17,
+  //         text: 'Comprehension Logarithmic Inequalities statement \\(0 < a < 1\\) \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\leq c\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\leq_{a} c a >\\) 1 \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\geq c > 0\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\geq a^{c}\\) -- * -- Question :Which one of the following is least',
+  //         type: QuestionType.trueFalse,
+  //         options: ['True', 'False'],
+  //       ),
+  //       Question(
+  //         number: 18,
+  //         text: 'Describe how to find the equation of a line given two points.',
+  //         type: QuestionType.subjective,
+  //       ),
+  //     ],
+  //   ),
+  //   QuestionCategory(
+  //     id: 'theory',
+  //     name: 'Theory',
+  //     questionCount: 2,
+  //     questions: [
+  //       Question(
+  //         number: 19,
+  //         text: 'What does the Fundamental Theorem of Algebra state?',
+  //         type: QuestionType.mcqSingle,
+  //         options: [
+  //           'Every polynomial has at least one root',
+  //           'All polynomials are factorable',
+  //           'Algebra is fundamental',
+  //           'None of the above'
+  //         ],
+  //       ),
+  //       Question(
+  //         number: 20,
+  //         text: 'Explain the concept of mathematical induction.',
+  //         type: QuestionType.subjective,
+  //       ),
+  //     ],
+  //   ),
+  // ];
 
   void selectAnswer(String answer) {
     final question = currentQuestion;

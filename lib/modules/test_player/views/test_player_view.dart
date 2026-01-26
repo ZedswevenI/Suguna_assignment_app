@@ -4,6 +4,7 @@ import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 import 'package:suguna_assignment_app/modules/test_player/views/question_options_widget.dart';
 
 import '../controllers/test_player_controller.dart';
+import '../controllers/test_player_parser.dart';
 
 class TestPlayerView extends StatelessWidget {
   const TestPlayerView({super.key});
@@ -166,10 +167,15 @@ class TestPlayerView extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child:  controller.isLoading  ? Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(child: CircularProgressIndicator())
+        ],
+      ) : Column(
         children: [
           _buildCategoryTabs(),
-          Expanded(child: QuestionOptionsWidget()),
+           Expanded(child: QuestionOptionsWidget()),
           _buildActionButtons(),
         ],
       ),
