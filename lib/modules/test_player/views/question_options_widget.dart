@@ -1,10 +1,7 @@
-
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tex/flutter_tex.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_controller.dart';
-
 import '../../../core/theme/app_colors.dart';
 
 class QuestionOptionsWidget extends StatelessWidget {
@@ -37,7 +34,8 @@ class QuestionOptionsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Obx(() => Text(
+              controller.isLatex(question.text) && question.type == QuestionType.trueFalse ? texText(question.text, fontSize: controller.getQuestionFontSize()) : Container(),
+              controller.isLatex(question.text) ? Container() : Text(
                 question.text,
                 style: TextStyle(
                   fontSize: controller.getQuestionFontSize(),
@@ -45,7 +43,7 @@ class QuestionOptionsWidget extends StatelessWidget {
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
-              )),
+              ),
               const SizedBox(height: 16),
               _buildQuestionWidget(question,controller),
             ],
@@ -55,16 +53,17 @@ class QuestionOptionsWidget extends StatelessWidget {
     });
   }
 
+
   Widget _buildQuestionWidget(Question question,TestPlayerController controller) {
     switch (question.type) {
       case QuestionType.mcqSingle:
         return _buildMCQSingle(question,controller);
       case QuestionType.mcqMultiple:
         return _buildMCQMultiple(question,controller);
-      case QuestionType.MatchTheFollowing:
+      case QuestionType.matchTheFollowing:
         return _buildMAQ(question,controller);
       case QuestionType.numerical:
-        return _buildNumerical(question);
+        return _buildNumerical(question,controller);
       case QuestionType.trueFalse:
         return _buildTrueFalse(question,controller);
       case QuestionType.singleDropdown:
@@ -80,7 +79,32 @@ class QuestionOptionsWidget extends StatelessWidget {
 
   // MCQ - Single Answer
   Widget _buildMCQSingle(Question question,TestPlayerController controller) {
-    return Column(
+   return  controller.isLatex(question.text) || controller.isLatex(question.options.first) ? TeXView(style: const TeXViewStyle(
+      backgroundColor: Colors.transparent, padding: TeXViewPadding.all(0),),
+      child: TeXViewColumn(children: [
+        TeXViewDocument(question.text, style: TeXViewStyle.fromCSS(
+          'font-size:${controller
+              .getQuestionFontSize()}px; margin-bottom:16px;',),),
+        ...question.options
+            .asMap()
+            .entries
+            .map((entry) {
+          final index = entry.key;
+          final option = entry.value;
+          final isSelected = question.selectedAnswer == option;
+          return TeXViewInkWell(id: 'option_$index',
+            onTap: (val) {
+              controller.selectAnswer(option);
+            },
+            child: TeXViewDocument(option, style: TeXViewStyle.fromCSS(
+              ''' padding:12px; margin-bottom:8px; border-radius:8px; cursor:pointer; transition: all 0.2s ease; border:${isSelected
+                  ? '2px solid #2563eb'
+                  : '1px solid #e5e7eb'}; background-color:${isSelected
+                  ? '#eff6ff'
+                  : 'transparent'}; font-size:${controller
+                  .getOptionFontSize()}px; ''',),),);
+        }),
+      ],),) :  Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: question.options
           .map((option) => _buildOption(
@@ -93,9 +117,45 @@ class QuestionOptionsWidget extends StatelessWidget {
     );
   }
 
+
   // MCQ - Multiple Answer
   Widget _buildMCQMultiple(Question question,TestPlayerController controller) {
-    return Column(
+    return controller.isLatex(question.text) ? TeXView(
+      style: const TeXViewStyle(
+        backgroundColor: Colors.transparent,
+        padding: TeXViewPadding.all(0),
+      ),
+      child: TeXViewColumn(
+        children: [
+           TeXViewDocument( question.text, style: TeXViewStyle.fromCSS( 'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;', ), ),
+          ...question.options.asMap().entries.map((entry) {
+            final index = entry.key;
+            final option = entry.value;
+            final isSelected =
+                question.selectedAnswers?.contains(option) ?? false;
+
+            return TeXViewInkWell(
+              id: 'multi_$index',
+              onTap: (_) => controller.selectAnswer(option),
+              child: TeXViewDocument(
+                option,
+                style: TeXViewStyle.fromCSS(
+                  '''
+                padding:12px;
+                margin-bottom:8px;
+                border-radius:8px;
+                cursor:pointer;
+                border:${isSelected ? '2px solid #16a34a' : '1px solid #e5e7eb'};
+                background-color:${isSelected ? '#ecfdf5' : 'transparent'};
+                font-size:${controller.getOptionFontSize()}px;
+                ''',
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    ) : Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
@@ -211,28 +271,30 @@ class QuestionOptionsWidget extends StatelessWidget {
     );
   }
 
-  // Match the Following
-  Widget _buildMAQ(Question question,TestPlayerController controller
+  Widget _buildMAQ(
+      Question question,
+      TestPlayerController controller,
       ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Instruction
         Container(
           padding: const EdgeInsets.all(12),
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
           ),
           child: Row(
             children: const [
-              Icon(Icons.compare_arrows_rounded, color: AppColors.primary, size: 18),
+              Icon(Icons.compare_arrows_rounded,
+                  color: AppColors.primary, size: 18),
               SizedBox(width: 8),
               Text(
-                'Match items from Column A with Column B',
+                'Match the following',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
@@ -240,95 +302,157 @@ class QuestionOptionsWidget extends StatelessWidget {
             ],
           ),
         ),
-        ...question.matchPairs!.map((pair) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Obx(() => Text(
+        Wrap(
+          spacing: 16,
+          children: question.matchPairs!.map((pair) {
+            final selectedValue = question.matchAnswers?[pair.left];
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // LEFT ITEM
+                  Text(
                     pair.left,
                     style: TextStyle(
                       fontSize: controller.getOptionFontSize(),
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
                     ),
-                  )),
-                ),
-                const SizedBox(width: 16),
-                Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 20),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 3,
-                  child: GetBuilder<TestPlayerController>(
-                    id: 'question',
-                    builder: (_) {
-                      return DropdownButtonFormField<String>(
-                        value: question.matchAnswers?[pair.left],
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // RIGHT OPTIONS (Chips)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: pair.rightOptions.map((option) {
+                      final isSelected = selectedValue == option;
+
+                      return ChoiceChip(
+                        label: Text(
+                          option,
+                          style: TextStyle(
+                            fontSize: controller.getOptionFontSize() - 1,
+                            color:
+                            isSelected ? Colors.white : AppColors.textPrimary,
                           ),
                         ),
-                        hint: const Text('Select', style: TextStyle(fontSize: 13)),
-                        items: pair.rightOptions.map((option) {
-                          return DropdownMenuItem(
-                            value: option,
-                            child: Text(option, style: const TextStyle(fontSize: 13)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            controller.selectMatch(pair.left, value);
-                          }
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        backgroundColor: Colors.grey.shade200,
+                        onSelected: (_) {
+                          controller.selectMatch(pair.left, option);
                         },
                       );
-                    },
+                    }).toList(),
                   ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
+                ],
+              ),
+            );
+          }).toList(),
+        )
+
+        // ...question.matchPairs!.map((pair) {
+        //   final selectedValue = question.matchAnswers?[pair.left];
+        //
+        //   return Container(
+        //     margin: const EdgeInsets.only(bottom: 12),
+        //     padding: const EdgeInsets.all(12),
+        //     decoration: BoxDecoration(
+        //       color: Colors.grey.shade50,
+        //       borderRadius: BorderRadius.circular(12),
+        //       border: Border.all(color: Colors.grey.shade300),
+        //     ),
+        //     child: Column(
+        //
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         // LEFT ITEM
+        //         Text(
+        //           pair.left,
+        //           style: TextStyle(
+        //             fontSize: controller.getOptionFontSize(),
+        //             fontWeight: FontWeight.w600,
+        //           ),
+        //         ),
+        //         const SizedBox(height: 12),
+        //
+        //         // RIGHT OPTIONS (Chips)
+        //         Wrap(
+        //           spacing: 8,
+        //           runSpacing: 8,
+        //           children: pair.rightOptions.map((option) {
+        //             final isSelected = selectedValue == option;
+        //
+        //             return ChoiceChip(
+        //               label: Text(
+        //                 option,
+        //                 style: TextStyle(
+        //                   fontSize: controller.getOptionFontSize() - 1,
+        //                   color:
+        //                   isSelected ? Colors.white : AppColors.textPrimary,
+        //                 ),
+        //               ),
+        //               selected: isSelected,
+        //               selectedColor: AppColors.primary,
+        //               backgroundColor: Colors.grey.shade200,
+        //               onSelected: (_) {
+        //                 controller.selectMatch(pair.left, option);
+        //               },
+        //             );
+        //           }).toList(),
+        //         ),
+        //       ],
+        //     ),
+        //   );
+        // }),
       ],
     );
   }
 
+
   // Numerical Answer
-  Widget _buildNumerical(Question question) {
+  Widget _buildNumerical(Question question,TestPlayerController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
-          ),
-          child: Row(
+        controller.isLatex(question.text) ? TeXView(child:  TeXViewColumn(
             children: [
-              const Icon(Icons.calculate_outlined, color: Color(0xFF10B981), size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF10B981),
-                ),
-              ),
-            ],
-          ),
+              TeXViewDocument(question.text, style: TeXViewStyle.fromCSS(
+                'font-size:${controller
+                    .getQuestionFontSize()}px; margin-bottom:16px;',),),
+              // TeXViewDocument("Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}", style: TeXViewStyle.fromCSS(
+              //   'font-size:${controller
+              //       .getQuestionFontSize()}px; margin-bottom:16px;',),),
+            ]
+        ),) : Column(
+          children: [
+            // Text(
+            //   question.text,
+            //   style: TextStyle(
+            //     fontSize: controller.getQuestionFontSize(),
+            //     height: 1.6,
+            //     color: AppColors.textPrimary,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            // ),
+            // Text(
+            //   'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
+            //   style: const TextStyle(
+            //     fontSize: 12,
+            //     fontWeight: FontWeight.w600,
+            //     color: Color(0xFF10B981),
+            //   ),
+            // ),
+          ],
         ),
         GetBuilder<TestPlayerController>(
           builder: (controller) {
@@ -659,6 +783,33 @@ class QuestionOptionsWidget extends StatelessWidget {
       ),
     );
   }
+
+  Widget texText(
+      String text, {
+        required double fontSize,
+        String extraCss = '',
+      }) {
+    return TeXView(
+      style: const TeXViewStyle(
+        backgroundColor: Colors.transparent,
+        padding: TeXViewPadding.all(0),
+      ),
+      child: TeXViewColumn(
+        children: [
+          TeXViewDocument(
+            text,
+            style: TeXViewStyle.fromCSS(
+              '''
+            font-size:${fontSize}px;
+            $extraCss
+            ''',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
 
 }

@@ -4,15 +4,15 @@ import 'package:get/get.dart';
 import '../../../data/models/subject_model.dart';
 
 enum QuestionType {
-  mcqSingle,           // MCQ - Single Answer
-  mcqMultiple,         // MCQ - Multiple Answer
-  MatchTheFollowing,   // MAQ (Match columns)
-  numerical,           // Numerical Answer
-  subjective,          // Subjective Type
-  trueFalse,          // True/False
-  singleDropdown,     // Single Select Dropdown
-  multiDropdown,      // Multi Select Dropdown
-  textType,           // Text Type
+  mcqSingle,
+  mcqMultiple,
+  matchTheFollowing,
+  numerical,
+  subjective,
+  trueFalse,
+  singleDropdown,
+  multiDropdown,
+  textType,
 }
 
 class MatchPair {
@@ -93,21 +93,21 @@ class TestPlayerController extends GetxController {
       questions: [
         Question(
           number: 1,
-          text: 'What is the value of x in the equation 2x + 5 = 15?',
+          text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
           type: QuestionType.mcqSingle,
-          options: ['x = 3', 'x = 5', 'x = 7', 'x = 10'],
+          options: ['\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3'],
         ),
         Question(
           number: 2,
-          text: 'Select all prime numbers from the following:',
+          text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
           type: QuestionType.mcqMultiple,
-          options: ['2', '4', '7', '9', '11', '15'],
+          options: ['\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4',],
           selectedAnswers: [],
         ),
         Question(
           number: 3,
           text: 'Match the following algebraic terms with their types:',
-          type: QuestionType.MatchTheFollowing,
+          type: QuestionType.matchTheFollowing,
           matchPairs: [
             MatchPair(left: '3x²', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
             MatchPair(left: '5', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
@@ -117,7 +117,7 @@ class TestPlayerController extends GetxController {
         ),
         Question(
           number: 4,
-          text: 'Find the value of x² when x = 3',
+          text: 'Ratio of any two sides of an equilateral \\(\\triangle\\) is always ____________',
           type: QuestionType.numerical,
           minRange: 0,
           maxRange: 100,
@@ -173,7 +173,7 @@ class TestPlayerController extends GetxController {
         ),
         Question(
           number: 17,
-          text: 'A straight line passes through origin with positive slope. Is it in the first quadrant?',
+          text: 'Comprehension Logarithmic Inequalities statement \\(0 < a < 1\\) \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\leq c\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\leq_{a} c a >\\) 1 \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\geq c > 0\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\geq a^{c}\\) -- * -- Question :Which one of the following is least',
           type: QuestionType.trueFalse,
           options: ['True', 'False'],
         ),
@@ -389,5 +389,24 @@ class TestPlayerController extends GetxController {
       stats[status] = category.questions.where((q) => q.status == status).length;
     }
     return stats;
+  }
+
+  bool isLatex(String text) {
+    final latexPatterns = [
+      r'\$.*?\$',              // $...$
+      r'\\\(',                 // \(
+      r'\\\)',                 // \)
+      r'\\frac',               // \frac
+      r'\\sqrt',               // \sqrt
+      r'\\alpha|\\beta|\\gamma|\\delta|\\Delta',
+      r'\^',                   // superscript
+      r'_',                    // subscript
+      r'\\begin\{.*?\}',       // environments
+      r'\\end\{.*?\}',
+    ];
+
+    return latexPatterns.any(
+          (pattern) => RegExp(pattern).hasMatch(text),
+    );
   }
 }
