@@ -1,16 +1,21 @@
 
+import 'dart:async';
+import 'dart:convert';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_parser.dart';
-
 import '../../../data/models/subject_model.dart';
+import '../views/test_review_view.dart';
 
 class TestPlayerController extends GetxController {
 
   final Rx<SubjectModel?> selectedSubject = Rx<SubjectModel?>(null);
   void updateView() => update(['palette']);
   final textSize = 1.obs;
-  final categories = [];
-
+  List<QuestionCategory> categories = [];
   bool isLoading = true;
 
 
@@ -19,6 +24,7 @@ class TestPlayerController extends GetxController {
     super.onInit();
     // Load actual API data
     loadTestData(_getApiResponse());
+    _startTimer();
   }
 
   // Method to load test data from API
@@ -35,6 +41,7 @@ class TestPlayerController extends GetxController {
 
   // Actual API response from your server
   String _getApiResponse() {
+
     return '''
     
     ''';
@@ -173,6 +180,7 @@ class TestPlayerController extends GetxController {
       case QuestionType.trueFalse:
       case QuestionType.singleDropdown:
         question.selectedAnswer = answer;
+        print("Selected one ${answer}");
         break;
       case QuestionType.mcqMultiple:
       case QuestionType.multiDropdown:
@@ -230,11 +238,11 @@ class TestPlayerController extends GetxController {
   double getQuestionFontSize() {
     switch (textSize.value) {
       case 0:
-        return 12.0; // Small - A
+        return 14.0; // Small - A
       case 1:
-        return 14.0; // Medium - A+
+        return 16.0; // Medium - A+
       case 2:
-        return 16.0; // Large - A++
+        return 18.0; // Large - A++
       default:
         return 16.0;
     }
@@ -244,13 +252,13 @@ class TestPlayerController extends GetxController {
   double getOptionFontSize() {
     switch (textSize.value) {
       case 0:
-        return 11.0; // Small
+        return 13.0; // Small
       case 1:
-        return 13.0; // Medium
+        return 15.0; // Medium
       case 2:
-        return 15.0; // Large
+        return 17.0; // Large
       default:
-        return 15.0;
+        return 17.0;
     }
   }
 
@@ -365,4 +373,487 @@ class TestPlayerController extends GetxController {
           (pattern) => RegExp(pattern).hasMatch(text),
     );
   }
+
+
+  //Timers
+  static const int totalDurationSeconds = 30 * 60; // 45 minutes
+  static const int warningThresholdSeconds = 5 * 60; // 5 minutes
+  static const int blinkThresholdSeconds = 60; // last 1 minute
+
+  final enableBlinkingTimer = true; // 🔥 ONE BOOLEAN (toggle anytime)
+  final blinkOn = true.obs;
+  Timer? _blinkTimer;
+
+  final remainingSeconds = totalDurationSeconds.obs;
+  final showFiveMinWarning = false.obs;
+
+  Timer? _timer;
+
+
+  @override
+  void onClose() {
+    _timer?.cancel();
+    _stopBlinking();
+    super.onClose();
+  }
+
+  // ================= TIMER LOGIC =================
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (remainingSeconds.value <= 0) {
+        timer.cancel();
+        _onTimeUp();
+        _stopBlinking();
+        return;
+      }
+
+      remainingSeconds.value--;
+
+      // 🔔 Show 5-minute warning once
+      if (remainingSeconds.value == warningThresholdSeconds) {
+        showFiveMinWarning.value = true;
+        _showFiveMinuteWarning();
+      }
+
+      if (enableBlinkingTimer &&
+          remainingSeconds.value == blinkThresholdSeconds) {
+        _startBlinking();
+      }
+    });
+  }
+
+  void _startBlinking() {
+    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      blinkOn.toggle();
+    });
+  }
+
+  void _stopBlinking() {
+    _blinkTimer?.cancel();
+    blinkOn.value = true;
+  }
+
+
+  void _onTimeUp() {
+    Get.snackbar(
+      'Time Up',
+      'Your test time has ended',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 4),
+    );
+
+    // TODO: auto submit test
+    submitTest();
+  }
+
+  void submitTest() {
+    _timer?.cancel();
+    // API submit call here
+  }
+
+  // ================= UI HELPERS =================
+  String get formattedTime {
+    final minutes = remainingSeconds.value ~/ 60;
+    final seconds = remainingSeconds.value % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  bool get isLastFiveMinutes =>
+      remainingSeconds.value <= warningThresholdSeconds;
+
+  bool get isLastOneMinute => remainingSeconds.value <= 60;
+  bool get isTimerCompleted => remainingSeconds.value <= 0;
+
+
+  void _showFiveMinuteWarning() {
+    Get.snackbar(
+      'Hurry Up ⏰',
+      'You have only 5 minutes left to complete the test',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFF97316),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 5),
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  // ============================================================
+// ADD THESE METHODS TO YOUR TestPlayerController CLASS
+// ============================================================
+
+// Add these variables at the top with your other state variables:
+  final reviewIndex = 0.obs;
+  final isTestCompleted = false.obs;
+  Map<String, String> correctAnswersMap = {}; // Will be populated from parser
+
+// ============================================================
+// RESULT & REVIEW METHODS
+// ============================================================
+
+  /// Get all questions across all categories
+  List<Question> getAllQuestions() {
+    return categories.expand((cat) => cat.questions).toList();
+  }
+
+  /// Get current question in review mode
+  Question get currentReviewQuestion {
+    final allQuestions = getAllQuestions();
+    if (allQuestions.isEmpty || reviewIndex.value >= allQuestions.length) {
+      return Question(
+        number: 0,
+        text: 'No question',
+        type: QuestionType.mcqSingle,
+      );
+    }
+    return allQuestions[reviewIndex.value];
+  }
+
+  /// Navigate to specific question in review mode
+  void goToReviewQuestion(int index) {
+    reviewIndex.value = index;
+    updateView();
+  }
+
+  /// Get total number of questions
+  int get totalQuestions => getAllQuestions().length;
+
+  /// Check if a question was skipped (not attempted)
+  bool isQuestionSkipped(Question question) {
+    return question.selectedAnswer == null &&
+        (question.selectedAnswers?.isEmpty ?? true) &&
+        (question.matchAnswers?.isEmpty ?? true) &&
+        question.numericalAnswer == null &&
+        (question.textAnswer?.isEmpty ?? true);
+  }
+
+  /// Check if a question is correct
+  bool isQuestionCorrect(Question question) {
+    // Get correct answer from storage
+    final correctAnswer = correctAnswersMap['question_${question.number}'];
+    if (correctAnswer == null) return false;
+
+    switch (question.type) {
+      case QuestionType.mcqSingle:
+      case QuestionType.trueFalse:
+      case QuestionType.singleDropdown:
+      // For MCQ single, compare the selected answer's key (A, B, C, D)
+        return question.selectedAnswer == correctAnswer;
+
+      case QuestionType.mcqMultiple:
+      case QuestionType.multiDropdown:
+      // For multiple choice, split correct answers by semicolon
+        final correctAnswers = correctAnswer.split(';').toSet();
+        final userAnswers = question.selectedAnswers?.toSet() ?? {};
+        return correctAnswers.toString() == userAnswers.toString();
+
+      case QuestionType.numerical:
+      // For numerical, parse and compare
+        final correctNum = double.tryParse(correctAnswer);
+        return question.numericalAnswer == correctNum;
+
+      case QuestionType.textType:
+      case QuestionType.subjective:
+      // For text, do case-insensitive comparison
+        return question.textAnswer?.toLowerCase().trim() ==
+            correctAnswer.toLowerCase().trim();
+
+      case QuestionType.matchTheFollowing:
+      // For matching, compare all pairs
+        if (question.matchAnswers == null) return false;
+        // Parse expected format: "A:1;B:2;C:3"
+        final expectedPairs = correctAnswer.split(';');
+        for (var pair in expectedPairs) {
+          final parts = pair.split(':');
+          if (parts.length != 2) continue;
+          final left = parts[0].trim();
+          final right = parts[1].trim();
+          if (question.matchAnswers![left] != right) return false;
+        }
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  /// Check if specific option is the correct answer
+  bool isOptionCorrect(Question question, String option) {
+    final correctAnswer = correctAnswersMap['question_${question.number}'];
+    print("Is correct ${correctAnswersMap['question_${question.number}']} ${question.selectedAnswer}");
+    if (correctAnswer == null) return false;
+
+    if (question.type == QuestionType.mcqMultiple) {
+      final correctAnswers = correctAnswer.split(';');
+      return correctAnswers.contains(option);
+    }
+
+    return option == correctAnswer;
+  }
+
+  /// Check if user selected this option
+  bool isUserAnswer(Question question, String option) {
+    if (question.type == QuestionType.mcqMultiple) {
+      return question.selectedAnswers?.contains(option) ?? false;
+    }
+    return question.selectedAnswer == option;
+  }
+
+  /// Get correct answer text for display
+  String getCorrectAnswer(Question question) {
+    return correctAnswersMap['question_${question.number}'] ?? 'N/A';
+  }
+
+  /// Get user's answer formatted for display
+  String getUserAnswerDisplay(Question question) {
+    switch (question.type) {
+      case QuestionType.mcqSingle:
+      case QuestionType.trueFalse:
+      case QuestionType.singleDropdown:
+        return question.selectedAnswer ?? 'Not Answered';
+
+      case QuestionType.mcqMultiple:
+      case QuestionType.multiDropdown:
+        if (question.selectedAnswers == null || question.selectedAnswers!.isEmpty) {
+          return 'Not Answered';
+        }
+        return question.selectedAnswers!.join(', ');
+
+      case QuestionType.numerical:
+        return question.numericalAnswer?.toString() ?? 'Not Answered';
+
+      case QuestionType.textType:
+      case QuestionType.subjective:
+        return question.textAnswer?.isNotEmpty == true
+            ? question.textAnswer!
+            : 'Not Answered';
+
+      case QuestionType.matchTheFollowing:
+        if (question.matchAnswers == null || question.matchAnswers!.isEmpty) {
+          return 'Not Answered';
+        }
+        return question.matchAnswers!.entries
+            .map((e) => '${e.key} → ${e.value}')
+            .join(', ');
+
+      default:
+        return 'Not Answered';
+    }
+  }
+
+  /// Get correct answer formatted for display
+  String getCorrectAnswerDisplay(Question question) {
+    final answer = correctAnswersMap['question_${question.number}'];
+    if (answer == null) return 'N/A';
+
+    switch (question.type) {
+      case QuestionType.mcqMultiple:
+        return answer.split(';').join(', ');
+
+      case QuestionType.matchTheFollowing:
+        return answer.split(';').map((pair) {
+          final parts = pair.split(':');
+          return '${parts[0]} → ${parts[1]}';
+        }).join(', ');
+
+      default:
+        return answer;
+    }
+  }
+
+  /// Get comprehensive test statistics
+  Map<String, dynamic> getTestStatistics() {
+    final allQuestions = getAllQuestions();
+    if (allQuestions.isEmpty) {
+      return {
+        'total': 0,
+        'correct': 0,
+        'wrong': 0,
+        'skipped': 0,
+        'percentage': 0.0,
+        'timeSpent': formattedTime,
+      };
+    }
+
+    int correct = 0;
+    int wrong = 0;
+    int skipped = 0;
+
+    for (var question in allQuestions) {
+      if (isQuestionSkipped(question)) {
+        skipped++;
+      } else if (isQuestionCorrect(question)) {
+        correct++;
+      } else {
+        wrong++;
+      }
+    }
+
+    final percentage = (correct / allQuestions.length) * 100;
+
+    return {
+      'total': allQuestions.length,
+      'correct': correct,
+      'wrong': wrong,
+      'skipped': skipped,
+      'percentage': percentage,
+      'timeSpent': formattedTime,
+    };
+  }
+
+  /// Alias for compatibility with result view
+  bool isCorrect(Question question) {
+    return isQuestionCorrect(question);
+  }
+
+  /// Complete test and show results
+  void completeTest() {
+    _timer?.cancel();
+    _stopBlinking();
+    isTestCompleted.value = true;
+    reviewIndex.value = 0;
+
+    // Navigate to result screen
+    // Get.to(() => TestResultView());
+    Get.off(() => const TestResultView());
+
+}
+
+  /// Submit test results to server
+  Future<void> submitTestResults() async {
+    try {
+      final results = _prepareResultsForSubmission();
+
+      // TODO: Replace with your actual API call
+      // final _apiService = ServiceLocator.get<AssignmentApiServices>();
+      // await _apiService.submitTestResults(results);
+
+      print('Results to submit: ${json.encode(results)}');
+
+      Get.snackbar(
+        'Success',
+        'Test results submitted successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+
+      // Navigate back or to results page
+      // Get.back();
+
+    } catch (e) {
+      print('Error submitting results: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to submit results. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  /// Prepare results data for API submission
+  Map<String, dynamic> _prepareResultsForSubmission() {
+    final stats = getTestStatistics();
+    final allQuestions = getAllQuestions();
+
+    final answers = allQuestions.map((q) {
+      return {
+        'questionNumber': q.number,
+        'questionId': 'question_${q.number}',
+        'questionType': q.type.toString(),
+        'userAnswer': _getUserAnswerForSubmission(q),
+        'correctAnswer': correctAnswersMap['question_${q.number}'],
+        'isCorrect': isQuestionCorrect(q),
+        'isSkipped': isQuestionSkipped(q),
+      };
+    }).toList();
+
+    return {
+      'testId': '471', // Get from your test data
+      'userId': 'USER_ID', // Get from auth
+      'studentId': 'STUDENT_ID', // Get from auth
+      'score': stats['correct'],
+      'totalQuestions': stats['total'],
+      'percentage': stats['percentage'],
+      'correctAnswers': stats['correct'],
+      'wrongAnswers': stats['wrong'],
+      'skippedQuestions': stats['skipped'],
+      'timeSpent': stats['timeSpent'],
+      'timeSpentSeconds': totalDurationSeconds - remainingSeconds.value,
+      'answers': answers,
+      'completedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// Get user answer in format suitable for API submission
+  String _getUserAnswerForSubmission(Question question) {
+    switch (question.type) {
+      case QuestionType.mcqSingle:
+      case QuestionType.trueFalse:
+      case QuestionType.singleDropdown:
+        return question.selectedAnswer ?? '';
+
+      case QuestionType.mcqMultiple:
+      case QuestionType.multiDropdown:
+        return question.selectedAnswers?.join(';') ?? '';
+
+      case QuestionType.numerical:
+        return question.numericalAnswer?.toString() ?? '';
+
+      case QuestionType.textType:
+      case QuestionType.subjective:
+        return question.textAnswer ?? '';
+
+      case QuestionType.matchTheFollowing:
+        return question.matchAnswers?.entries
+            .map((e) => '${e.key}:${e.value}')
+            .join(';') ?? '';
+
+      default:
+        return '';
+    }
+  }
+
+// ============================================================
+// UPDATE YOUR submitTest() METHOD
+// ============================================================
+
+// Replace your existing submitTest() with:
+//   void submitTest() {
+//     _timer?.cancel();
+//     _stopBlinking();
+//
+//     // Show confirmation dialog
+//     Get.dialog(
+//       AlertDialog(
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+//         title: const Text('Submit Test?'),
+//         content: const Text(
+//           'Are you sure you want to submit the test? You cannot change your answers after submission.',
+//         ),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Get.back(),
+//             child: const Text('Cancel'),
+//           ),
+//           ElevatedButton(
+//             onPressed: () {
+//               Get.back();
+//               completeTest();
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: const Color(0xFF4F46E5),
+//             ),
+//             child: const Text('Submit'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
 }

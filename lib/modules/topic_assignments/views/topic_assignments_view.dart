@@ -8,6 +8,7 @@ import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import 'package:suguna_assignment_app/data/models/subject_model.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/controllers/topic_assignments_controller.dart';
 import '../../../core/widgets/score_circle.dart';
+import '../../../data/models/topic_model.dart';
 
 class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
   const TopicAssignmentsView({super.key});
@@ -20,38 +21,46 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
 
   @override
   Widget build(BuildContext context) {
-    return AppLayout(
-      selectedRoute: AppRoutes.topicAssignments,
-      subjectName: controller.subject.name,
-      classInfo: controller.subject.classInfo,
-      assignmentLabel: 'Assignment',
-      showSidebar: false,
-      showBackButton: true,
-      child: _buildModernLayout(context),
+    return SafeArea(
+      child: AppLayout(
+        selectedRoute: AppRoutes.topicAssignments,
+        subjectName: controller.subject.name,
+        classInfo: controller.subject.classInfo,
+        assignmentLabel: 'Assignment',
+        showSidebar: false,
+        showBackButton: true,
+        child: _buildModernLayout(context),
+      ),
     );
   }
 
   Widget _buildModernLayout(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFFF8F9FC),
-            const Color(0xFFEEF2F7),
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFF8F9FC),
+              const Color(0xFFEEF2F7),
+            ],
+          ),
+        ),
+        padding: ResponsiveHelper.getPadding(context),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildModernTopicPanel(),
+            const SizedBox(width: 20),
+            Expanded(child: _buildModernMatrix()),
           ],
         ),
-      ),
-      padding: ResponsiveHelper.getPadding(context),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildModernTopicPanel(),
-          const SizedBox(width: 20),
-          Expanded(child: _buildModernMatrix()),
-        ],
-      ),
+      );
+    }
     );
   }
 
@@ -377,7 +386,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
     );
   }
 
-  Widget _buildModernDataRow(subtopic) {
+  Widget _buildModernDataRow(SubtopicModel subtopic) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -388,16 +397,13 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
           color: Colors.white.withOpacity(0.8),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // =======================
+          // Subtopic Name
+          // =======================
           SizedBox(
             width: 280,
             child: Text(
@@ -406,26 +412,73 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
-                letterSpacing: 0.2,
               ),
             ),
           ),
-          ..._columns.map(
-                (col) => SizedBox(
+
+          // =======================
+          // Exam Category Columns
+          // =======================
+          ..._columns.map((col) {
+            final tests = subtopic.scores[col] ?? [];
+
+            return SizedBox(
               width: 140,
-              child: Center(
-                child: ModernAssignmentDot(
-                  state: controller.getCircleState(subtopic.id, col),
-                  selected: controller.isSubtopicSelected(subtopic.id, col),
-                  onTap: () => controller.onCircleTap(subtopic.id, col),
-                  // Add these methods to your controller to get status and score
-                  status: controller.getAssignmentStatus(subtopic.id, col),
-                  scoreLevel: controller.getScoreLevel(subtopic.id, col),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: tests.isEmpty
+                    ? [_buildEmptyDot()]
+                    : tests.map((test) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ModernAssignmentDot(
+                      state: controller.getCircleState(
+                        subtopic.id,
+                        col,
+                        test.testId,
+                      ),
+                      selected: controller.isSubtopicSelected(
+                        subtopic.id,
+                        col,
+                        test.testId,
+                      ),
+                      onTap: () => controller.onCircleTap(
+                        subtopic.id,
+                        col,
+                        test.testId,
+                      ),
+                      status: controller.getAssignmentStatus(
+                        subtopic.id,
+                        col,
+                        test.testId,
+                      ),
+                      scoreLevel: controller.getScoreLevel(
+                        subtopic.id,
+                        col,
+                        test.testId,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-            ),
-          ),
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDot() {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.transparent,
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.3),
+          width: 1,
+        ),
       ),
     );
   }

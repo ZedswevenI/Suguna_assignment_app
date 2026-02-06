@@ -5,6 +5,10 @@ import 'package:suguna_assignment_app/data/services/mock_data_service.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
 import 'package:suguna_assignment_app/core/widgets/score_circle.dart';
 
+import '../../../core/resources/app_strings.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/assigment_api_services.dart';
+import '../../../core/services/service_locator.dart';
 import '../views/topic_assignments_view.dart';
 
 class TopicAssignmentsController extends GetxController {
@@ -16,6 +20,12 @@ class TopicAssignmentsController extends GetxController {
   final downloadedSubtopicIds = <String>{}.obs;
   final selectedSubtopicId = Rxn<String>();
   final selectedColumnKey = Rxn<String>();
+  final _apiService = ServiceLocator.get<AssignmentApiServices>();
+  Map<String,dynamic>? selectedQuestions ;
+  final selectedTestId = Rxn<String>();
+
+  static TopicAssignmentsController get to => Get.find();
+
 
   @override
   void onInit() {
@@ -24,14 +34,75 @@ class TopicAssignmentsController extends GetxController {
     loadTopics();
   }
 
-  void loadTopics() {
+  void loadTopics() async {
     isLoading.value = true;
-    topics.value = MockDataService.getTopics(subject.id);
-    if (topics.isNotEmpty) {
-      selectedTopicId.value = topics.first.id;
+    try {
+      final response = await _apiService.getAssignmentTopics(subject.name, 9);
+      topics.value = mapTopicsFromApi(response);
+      if (topics.isNotEmpty) {
+        selectedTopicId.value = topics.first.id;
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load topics');
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
+
+  List<TopicModel> mapTopicsFromApi(Map<String, dynamic> response) {
+    final Map<String, dynamic> subtopicsByTopics =
+    response['data']['subtopicsByTopics'];
+
+    final List<TopicModel> topics = [];
+
+    subtopicsByTopics.forEach((categoryName, subtopicsList) {
+      final List<SubtopicModel> subtopics = [];
+
+      for (final subtopic in subtopicsList) {
+        final Map<String, List<AssignmentScore>> scores = {};
+
+        for (final test in subtopic['test']) {
+          final columnKey =
+          normalizeExamCategory(test['examCategory']);
+
+          scores.putIfAbsent(columnKey, () => []).add(
+            AssignmentScore(
+              testId: test['testId'],
+              sortOrder: test['sortOrder'],
+            ),
+          );
+        }
+
+        // 🔥 Important: keep order stable (level-wise)
+        scores.forEach((key, list) {
+          list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        });
+
+        subtopics.add(
+          SubtopicModel(
+            id: subtopic['subtopicId'],
+            name: subtopic['subtopicName'],
+            scores: scores,
+          ),
+        );
+      }
+
+      topics.add(
+        TopicModel(
+          id: categoryName,
+          name: categoryName,
+          subtopics: subtopics,
+        ),
+      );
+    });
+
+    return topics;
+  }
+  String normalizeExamCategory(String apiValue) {
+    if (apiValue == 'JEE Mains') return 'JEE Main';
+    return apiValue;
+  }
+
 
   void selectTopic(String topicId) {
     selectedTopicId.value = topicId;
@@ -48,57 +119,84 @@ class TopicAssignmentsController extends GetxController {
     }
   }
 
-  void onCircleTap(String subtopicId, String columnKey) {
-    final key = '$subtopicId-$columnKey';
-    
-    // Check if already downloaded
+  void onCircleTap(
+      String subtopicId,
+      String columnKey,
+      String testId,
+      ) async {
+    final key = '$subtopicId-$columnKey-$testId';
+
+    // 🔥 Mark selection immediately (for UI)
+    selectedSubtopicId.value = subtopicId;
+    selectedColumnKey.value = columnKey;
+    selectedTestId.value = testId;
+
+    // Already downloaded → just show CTA
     if (downloadedSubtopicIds.contains(key)) {
-      // Show start assignment button
-      selectedSubtopicId.value = subtopicId;
-      selectedColumnKey.value = columnKey;
       return;
     }
 
-    // Check if downloading
+    // Already downloading → ignore
     if (downloadingSubtopicIds.contains(key)) {
       return;
     }
 
-    // Start download
     downloadingSubtopicIds.add(key);
 
-    // Simulate download
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final response = await _apiService.loadQuestions(
+        subject.name,
+        9,
+        testId,
+      );
+
       downloadingSubtopicIds.remove(key);
       downloadedSubtopicIds.add(key);
-      // After download, select this subtopic to show start button
-      selectedSubtopicId.value = subtopicId;
-      selectedColumnKey.value = columnKey;
-    });
+
+      selectedQuestions = response;
+    } catch (e) {
+      downloadingSubtopicIds.remove(key);
+      Get.snackbar('Error', 'Failed to load questions');
+    }
   }
 
   void startAssignment() {
-    if (selectedSubtopicId.value == null || selectedColumnKey.value == null) {
+    if (selectedSubtopicId.value == null ||
+        selectedColumnKey.value == null ||
+        selectedTestId.value == null) {
       return;
     }
-    
-    // Navigate to Assignment Instructions
-    Get.toNamed(AppRoutes.assignmentInstructions, arguments: {
-      'subtopicId': selectedSubtopicId.value,
-      'columnKey': selectedColumnKey.value,
-    });
+
+    Get.toNamed(
+      AppRoutes.assignmentInstructions,
+      arguments: {
+        'subtopicId': selectedSubtopicId.value,
+        'columnKey': selectedColumnKey.value,
+        'testId': selectedTestId.value,
+      },
+    );
+
     // Clear selection
     selectedSubtopicId.value = null;
     selectedColumnKey.value = null;
+    selectedTestId.value = null;
   }
-
-  bool isSubtopicSelected(String subtopicId, String columnKey) {
+  bool isSubtopicSelected(
+      String subtopicId,
+      String columnKey,
+      String testId,
+      ) {
     return selectedSubtopicId.value == subtopicId &&
-        selectedColumnKey.value == columnKey;
+        selectedColumnKey.value == columnKey &&
+        selectedTestId.value == testId;
   }
+  CircleState getCircleState(
+      String subtopicId,
+      String columnKey,
+      String testId,
+      ) {
+    final key = '$subtopicId-$columnKey-$testId';
 
-  CircleState getCircleState(String subtopicId, String columnKey) {
-    final key = '$subtopicId-$columnKey';
     if (downloadingSubtopicIds.contains(key)) {
       return CircleState.downloading;
     }
@@ -108,17 +206,35 @@ class TopicAssignmentsController extends GetxController {
     return CircleState.defaultState;
   }
 
-  AssignmentStatus? getAssignmentStatus(String subtopicId, String column) {
-    final key = '$subtopicId-$column';
-    if (downloadingSubtopicIds.contains(key)) {
+  AssignmentStatus getAssignmentStatus(
+      String subtopicId,
+      String columnKey,
+      String testId,
+      ) {
+    final key = '$subtopicId-$columnKey-$testId';
+
+    if (downloadedSubtopicIds.contains(key)) {
       return AssignmentStatus.attempted;
     }
+
+    if (downloadingSubtopicIds.contains(key)) {
+      return AssignmentStatus.available;
+    }
+
     return AssignmentStatus.notOpened;
   }
 
-  ScoreLevel? getScoreLevel(String subtopicId, String column) {
-    return null;
+  ScoreLevel? getScoreLevel(
+      String subtopicId,
+      String columnKey,
+      String testId,
+      ) {
+    final key = '$subtopicId-$columnKey-$testId';
 
-    // Return the score level if attempted
+    if (!downloadedSubtopicIds.contains(key)) {
+      return null;
+    }
+
+    return null;
   }
 }

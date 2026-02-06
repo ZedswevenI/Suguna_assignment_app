@@ -2,6 +2,12 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_controller.dart';
+
+import '../../../core/services/assigment_api_services.dart';
+import '../../../core/services/service_locator.dart';
+import '../../topic_assignments/controllers/topic_assignments_controller.dart';
 
 // ============================================================
 // API PARSER - Standalone Class
@@ -45,17 +51,23 @@ class Question {
   final String text;
   final QuestionType type;
   final List<String> options;
-  final List<MatchPair>? matchPairs; // For MAQ
-  final double? minRange; // For numerical
-  final double? maxRange; // For numerical
+  final List<MatchPair>? matchPairs;
+  final double? minRange;
+  final double? maxRange;
   final String? questionHtml;
 
-  // Answer storage
-  String? selectedAnswer; // For single select
-  List<String>? selectedAnswers; // For multiple select
-  Map<String, String>? matchAnswers; // For MAQ
-  double? numericalAnswer; // For numerical
-  String? textAnswer; // For subjective/text
+  // ✅ Correct Answer Storage
+  final String? correctAnswer;
+  final List<String>? correctAnswers;
+  final Map<String, String>? correctMatchAnswers;
+  final double? correctNumericalAnswer;
+
+  // ✅ User Answers
+  String? selectedAnswer;
+  List<String>? selectedAnswers;
+  Map<String, String>? matchAnswers;
+  double? numericalAnswer;
+  String? textAnswer;
 
   QuestionStatus status;
 
@@ -66,8 +78,14 @@ class Question {
     this.options = const [],
     this.matchPairs,
     this.minRange,
-    this.questionHtml,
     this.maxRange,
+    this.questionHtml,
+
+    this.correctAnswer,
+    this.correctAnswers,
+    this.correctMatchAnswers,
+    this.correctNumericalAnswer,
+
     this.selectedAnswer,
     this.selectedAnswers,
     this.matchAnswers,
@@ -87,7 +105,6 @@ enum QuestionStatus {
 
 
 class TestApiParser {
-
 
   static String fixBrokenJson(String raw) {
     return raw
@@ -116,6 +133,7 @@ class TestApiParser {
   }
 
   static Future<Map<String, dynamic>> loadQuestionsJson() async {
+    // final _apiService = ServiceLocator.get<AssignmentApiServices>();
     final rawString = await rootBundle.loadString('assets/test.json');
 
     final fixedString = fixBrokenJson(rawString);
@@ -133,7 +151,9 @@ class TestApiParser {
   // Parse from JSON string
   static Future<List<QuestionCategory>> parseFromJsonString(String jsonString) async {
     try {
-      final Map<String, dynamic> jsonData =await loadQuestionsJson();
+      // final Map<String, dynamic> jsonData =await loadQuestionsJson();
+      // TopicAssignmentsController.to.selectedQuestions ??
+     final Map<String, dynamic> jsonData = await loadQuestionsJson();
       return parseApiResponse(jsonData);
     } catch (e) {
       print('Error parsing JSON string: $e');
@@ -142,62 +162,106 @@ class TestApiParser {
   }
 
   // Main parser for API response
-  static List<QuestionCategory> parseApiResponse(Map<String, dynamic> jsonData) {
+  static List<QuestionCategory> parseApiResponse(
+      Map<String, dynamic> jsonData,
+      ) {
     try {
-
       final List<dynamic> dataList = jsonData['data'] as List<dynamic>;
       if (dataList.isEmpty) return [];
 
-      final testData = dataList[0] as Map<String, dynamic>;
-      final List<dynamic> questionsJson = testData['questions'] as List<dynamic>;
+      final Map<String, String> correctAnswersMap = {};
 
-      // Group questions by subtopic
-      final Map<String, List<Question>> questionsBySubtopic = {};
+
+      final testData = dataList[0] as Map<String, dynamic>;
+      final List<dynamic> questionsJson =
+      testData['questions'] as List<dynamic>;
+
+      final Map<QuestionType, List<Question>> questionsByType = {};
 
       for (int i = 0; i < questionsJson.length; i++) {
         final qJson = questionsJson[i] as Map<String, dynamic>;
 
-        // Get subtopic name for grouping
-        final subtopicName = (qJson['subtopicId'] as Map<String, dynamic>?)?['subtopicName'] as String? ??
-            (testData['subtopic'] as Map<String, dynamic>?)?['subtopicName'] as String? ??
-            'General';
+        final correctAnswer = qJson['correctAnswer'] as String?;
 
-        // Extract question type from API
-        final questionTypeFromApi = qJson['questionType'] as String? ?? 'mcq_single';
-
-        // Parse to our QuestionType enum
+        final questionTypeFromApi =
+            qJson['questionType'] as String? ?? 'mcq_single';
         final parsedType = _parseQuestionType(questionTypeFromApi);
-
         final question = Question(
           number: i + 1,
           text: qJson['questionText'] as String? ?? '',
           questionHtml: qJson['questionHtml'] as String?,
           type: parsedType,
-          options: _parseOptions(qJson['options'] as List<dynamic>? ?? []),
+          options: _parseOptions(
+            qJson['options'] as List<dynamic>? ?? [],
+          ),
           status: QuestionStatus.notVisited,
         );
-
-        questionsBySubtopic.putIfAbsent(subtopicName, () => []).add(question);
+        if (correctAnswer != null) {
+          correctAnswersMap['question_${i + 1}'] = correctAnswer;
+        }
+        questionsByType.putIfAbsent(parsedType, () => []).add(question);
       }
 
-      // Convert to categories
       final List<QuestionCategory> categories = [];
       int categoryIndex = 0;
 
-      questionsBySubtopic.forEach((subtopicName, questions) {
-        categories.add(QuestionCategory(
-          id: 'category_$categoryIndex',
-          name: subtopicName,
-          questionCount: questions.length,
-          questions: questions,
-        ));
+      questionsByType.forEach((type, questions) {
+        categories.add(
+          QuestionCategory(
+            id: 'category_$categoryIndex',
+            name: _getCategoryNameFromType(type),
+            questionCount: questions.length,
+            questions: questions,
+          ),
+        );
         categoryIndex++;
       });
+
+      try {
+        final controller = Get.find<TestPlayerController>();
+        controller.correctAnswersMap = correctAnswersMap;
+      } catch (e) {
+        print('Controller not found: $e');
+      }
 
       return categories;
     } catch (e) {
       print('Error parsing API response: $e');
       return [];
+    }
+  }
+
+  static String _getCategoryNameFromType(QuestionType type) {
+    switch (type) {
+      case QuestionType.mcqSingle:
+        return 'MCQ (Single Correct)';
+
+      case QuestionType.mcqMultiple:
+        return 'MCQ (Multiple Correct)';
+
+      case QuestionType.matchTheFollowing:
+        return 'Match the Following';
+
+      case QuestionType.numerical:
+        return 'Numerical / Integer';
+
+      case QuestionType.textType:
+        return 'Short Answer';
+
+      case QuestionType.subjective:
+        return 'Subjective';
+
+      case QuestionType.trueFalse:
+        return 'True / False';
+
+      case QuestionType.singleDropdown:
+        return 'Dropdown (Single Select)';
+
+      case QuestionType.multiDropdown:
+        return 'Dropdown (Multiple Select)';
+
+      default:
+        return 'Other Questions';
     }
   }
 
@@ -210,6 +274,7 @@ class TestApiParser {
         return QuestionType.mcqMultiple;
       case 'match_the_following':
       case 'maq':
+      case 'matrix':
         return QuestionType.matchTheFollowing;
       case 'integer':
       case 'numerical':

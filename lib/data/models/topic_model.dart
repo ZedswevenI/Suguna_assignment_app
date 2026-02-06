@@ -13,7 +13,7 @@ class TopicModel {
 class SubtopicModel {
   final String id;
   final String name;
-  final Map<String, AssignmentScore> scores; // Key: "Board", "JEE Main", "JEE Advanced"
+  final Map<String, List<AssignmentScore>> scores;
 
   SubtopicModel({
     required this.id,
@@ -22,14 +22,24 @@ class SubtopicModel {
   });
 }
 
+// class AssignmentScore {
+//   final double score;
+//   final bool isDownloaded;
+//   final bool isDownloading;
+//
+//   AssignmentScore({
+//     required this.score,
+//     this.isDownloaded = false,
+//     this.isDownloading = false,
+//   });
+// }
+
 class AssignmentScore {
-  final double score;
-  final bool isDownloaded;
-  final bool isDownloading;
+  final String testId;
+  final int sortOrder;
 
   AssignmentScore({
-    required this.score,
-    this.isDownloaded = false,
-    this.isDownloading = false,
+    required this.testId,
+    required this.sortOrder,
   });
 }

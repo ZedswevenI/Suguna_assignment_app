@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
+import 'package:suguna_assignment_app/modules/auth/bindings/login_binding.dart';
+import 'package:suguna_assignment_app/modules/auth/views/login_view.dart';
 import 'package:suguna_assignment_app/modules/home_assignments/bindings/home_assignments_binding.dart';
 import 'package:suguna_assignment_app/modules/home_assignments/views/home_assignments_view.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/bindings/topic_assignments_binding.dart';
@@ -28,6 +30,11 @@ class RouteConfig {
         name: AppRoutes.home,
         page: () => const HomeAssignmentsView(),
         binding: HomeAssignmentsBinding(),
+      ),
+      GetPage(
+        name: AppRoutes.login,
+        page: () => const LoginView(),
+        binding: LoginBinding(),
       ),
       GetPage(
         name: AppRoutes.topicAssignments,

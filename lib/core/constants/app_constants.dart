@@ -1,6 +1,6 @@
 class AppConstants {
   // API Configuration (for future use)
-  static const String baseUrl = 'https://api.example.com';
+  static const String baseUrl = 'http://143.110.182.180:3012/api/crm';
   static const Duration timeout = Duration(seconds: 30);
   
   // Layout Constants

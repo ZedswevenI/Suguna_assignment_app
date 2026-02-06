@@ -35,17 +35,19 @@ class QuestionOptionsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+
               controller.isLatex(question.questionHtml ?? "") && question.type == QuestionType.trueFalse ? texText(question.questionHtml ?? "", fontSize: controller.getQuestionFontSize()) : Container(),
-              controller.isLatex(question.questionHtml ?? "") ? Container() : Text(
-                question.questionHtml ?? "",
-                style: TextStyle(
-                  fontSize: controller.getQuestionFontSize(),
-                  height: 1.6,
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 16),
+              // controller.isLatex(question.questionHtml ?? "") ? Container() : Text(
+              //   // question.questionHtml ?? "",
+              //   "",
+              //   style: TextStyle(
+              //     fontSize: controller.getQuestionFontSize(),
+              //     height: 1.6,
+              //     color: AppColors.textPrimary,
+              //     fontWeight: FontWeight.w500,
+              //   ),
+              // ),
+              // const SizedBox(height: 16),
               _buildQuestionWidget(question,controller),
             ],
           ),
@@ -78,45 +80,80 @@ class QuestionOptionsWidget extends StatelessWidget {
       }
   }
 
-
   // MCQ - Single Answer
   Widget _buildMCQSingle(Question question,TestPlayerController controller) {
-   return  controller.isLatex(question.questionHtml ?? "") || controller.isLatex(question.options.first) ? TeXView(style: const TeXViewStyle(
+    return TeXView(style: const TeXViewStyle(
       backgroundColor: Colors.transparent, padding: TeXViewPadding.all(0),),
       child: TeXViewColumn(children: [
         TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
           'font-size:${controller
               .getQuestionFontSize()}px; margin-bottom:16px;',),),
-        ...question.options
-            .asMap()
-            .entries
-            .map((entry) {
+        ...question.options.asMap().entries.map((entry) {
           final index = entry.key;
           final option = entry.value;
-          final isSelected = question.selectedAnswer == option;
-          return TeXViewInkWell(id: 'option_$index',
-            onTap: (val) {
-              controller.selectAnswer(option);
-            },
-            child: TeXViewDocument(option, style: TeXViewStyle.fromCSS(
-              ''' padding:12px; margin-bottom:8px; border-radius:8px; cursor:pointer; transition: all 0.2s ease; border:${isSelected
-                  ? '2px solid #2563eb'
-                  : '1px solid #e5e7eb'}; background-color:${isSelected
-                  ? '#eff6ff'
-                  : 'transparent'}; font-size:${controller
-                  .getOptionFontSize()}px; ''',),),);
+          final label = String.fromCharCode(65 + index); // A, B, C, D
+          final isSelected = question.selectedAnswer == label;
+          return TeXViewInkWell(
+            id: 'option_$index',
+            onTap: (_) => controller.selectAnswer(label),
+            child: TeXViewDocument(
+              '''
+      <div style="display:flex; align-items:flex-start; gap:12px;">
+        
+        <!-- LABEL CIRCLE -->
+        <div style="
+          width:24px;
+          height:24px;
+          border-radius:50%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:10px;
+          font-weight:700;
+          color:${isSelected ? '#ffffff' : '#374151'};
+          background-color:${isSelected ? '#2563eb' : '#d1d5db'};
+          flex-shrink:0;
+        ">
+          $label
+        </div>
+
+        <!-- OPTION TEXT -->
+        <div style="
+          flex:1;
+          font-size:${controller.getOptionFontSize()}px;
+          font-weight:${isSelected ? '600' : '500'};
+        ">
+          $option
+        </div>
+
+      </div>
+      ''',
+              style: TeXViewStyle.fromCSS(
+                  '''
+        padding:12px;
+        margin-bottom:8px;
+        border-radius:8px;
+        cursor:pointer;
+        border:${isSelected ? '2px solid #2563eb' : '1px solid #e5e7eb'};
+        background-color:${isSelected ? '#eff6ff' : 'transparent'};
+        transition: all 0.2s ease;
+        '''
+              ),
+            ),
+          );
         }),
-      ],),) :  Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: question.options
-          .map((option) => _buildOption(
-        controller: controller,
-        label: String.fromCharCode(65 + question.options.indexOf(option)),
-        text: option,
-        isSelected: question.selectedAnswer == option,
-        onTap: () => controller.selectAnswer(option),
-      )).toList(),
-    );
+      ],),);
+    // :  Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: question.options
+    //       .map((option) => _buildOption(
+    //     controller: controller,
+    //     label: String.fromCharCode(65 + question.options.indexOf(option)),
+    //     text: option,
+    //     isSelected: question.selectedAnswer == option,
+    //     onTap: () => controller.selectAnswer(option),
+    //   )).toList(),
+    // );
   }
 
 
@@ -426,7 +463,7 @@ class QuestionOptionsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        controller.isLatex(question.questionHtml ?? "") ? TeXView(child:  TeXViewColumn(
+        TeXView(child:  TeXViewColumn(
             children: [
               TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
                 'font-size:${controller
@@ -435,26 +472,38 @@ class QuestionOptionsWidget extends StatelessWidget {
               //   'font-size:${controller
               //       .getQuestionFontSize()}px; margin-bottom:16px;',),),
             ]
-        ),) : Column(
-          children: [
-            Text(
-              question.questionHtml ?? "",
-              style: TextStyle(
-                fontSize: controller.getQuestionFontSize(),
-                height: 1.6,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            // Text(
-            //   'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
-            //   style: const TextStyle(
-            //     fontSize: 12,
-            //     fontWeight: FontWeight.w600,
-            //     color: Color(0xFF10B981),
-            //   ),
-            // ),
-          ],
+        ),
+        // controller.isLatex(question.questionHtml ?? "") ? TeXView(child:  TeXViewColumn(
+        //     children: [
+        //       TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
+        //         'font-size:${controller
+        //             .getQuestionFontSize()}px; margin-bottom:16px;',),),
+        //       // TeXViewDocument("Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}", style: TeXViewStyle.fromCSS(
+        //       //   'font-size:${controller
+        //       //       .getQuestionFontSize()}px; margin-bottom:16px;',),),
+        //     ]
+        // ),) : Column(
+        //   children: [
+        //
+        //     Text(
+        //       question.questionHtml ?? "",
+        //       style: TextStyle(
+        //         fontSize: controller.getQuestionFontSize(),
+        //         height: 1.6,
+        //         color: AppColors.textPrimary,
+        //         fontWeight: FontWeight.w500,
+        //       ),
+        //     ),
+        //     SizedBox(height: 20,),
+        //     // Text(
+        //     //   'Enter numerical value${question.minRange != null ? " (Range: ${question.minRange} - ${question.maxRange})" : ""}',
+        //     //   style: const TextStyle(
+        //     //     fontSize: 12,
+        //     //     fontWeight: FontWeight.w600,
+        //     //     color: Color(0xFF10B981),
+        //     //   ),
+        //     // ),
+        //   ],
         ),
         GetBuilder<TestPlayerController>(
           builder: (controller) {

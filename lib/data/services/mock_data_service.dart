@@ -15,7 +15,7 @@ class MockDataService {
   // Mock Topics for a subject
   static List<TopicModel> getTopics(String subjectId) {
     return [
-      TopicModel(
+      /* TopicModel(
         id: '1',
         name: 'Algebra',
         subtopics: [
@@ -71,7 +71,7 @@ class MockDataService {
             },
           ),
         ],
-      ),
+      ),*/
     ];
   }
 
