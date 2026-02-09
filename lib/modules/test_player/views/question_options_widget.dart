@@ -508,6 +508,7 @@ class QuestionOptionsWidget extends StatelessWidget {
         GetBuilder<TestPlayerController>(
           builder: (controller) {
             return TextField(
+              controller: controller.numericalController,  // 👈 important
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 hintText: 'Enter your answer',

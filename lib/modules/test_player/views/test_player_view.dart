@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/core/theme/app_colors.dart';
+import 'package:suguna_assignment_app/data/services/sessions.dart';
 import 'package:suguna_assignment_app/modules/test_player/views/question_options_widget.dart';
 import 'package:suguna_assignment_app/modules/test_player/views/test_review_view.dart';
 
-import '../../topic_assignments/controllers/topic_assignments_controller.dart';
+import '../../../core/routes/app_routes.dart';
 import '../controllers/test_player_controller.dart';
 import '../controllers/test_player_parser.dart';
 
 class TestPlayerView extends StatelessWidget {
   const TestPlayerView({super.key});
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<TestPlayerController>(
@@ -74,7 +74,7 @@ class TestPlayerView extends StatelessWidget {
                 Icon(Icons.book_rounded, size: 18, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(
-                  TopicAssignmentsController.to.subject.name,
+                  "${Session.instance.selectedSubject?.name} | ${Session.instance.selectedSubtopic?.name} | ${Session.instance.selectedSub}",
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -132,7 +132,9 @@ class TestPlayerView extends StatelessWidget {
           }),
           const SizedBox(width: 16),
           OutlinedButton.icon(
-            onPressed: () => {},
+            onPressed: () {
+              _showRetestConfirmation(controller);
+            },
             icon: const Icon(Icons.exit_to_app_rounded, size: 18),
             label: const Text('Exit'),
             style: OutlinedButton.styleFrom(
@@ -401,12 +403,13 @@ class TestPlayerView extends StatelessWidget {
           ),
           child: Row(
             children: [
+
               // Previous Button
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => controller.previous(),
                   icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                  label: const Text('Previous', style: TextStyle(fontSize: 13)),
+                  label: const Text('Previous', style: TextStyle(fontSize: 12)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
                     side: BorderSide(color: Colors.grey.shade300),
@@ -427,7 +430,7 @@ class TestPlayerView extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => controller.clearResponse(),
                   icon: const Icon(Icons.clear_rounded, size: 16),
-                  label: const Text('Clear', style: TextStyle(fontSize: 13)),
+                  label: const Text('Clear', style: TextStyle(fontSize: 12)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFEF4444),
                     side: const BorderSide(color: Color(0xFFEF4444)),
@@ -456,8 +459,8 @@ class TestPlayerView extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Save & Mark',
-                    style: TextStyle(fontSize: 13),
+                    'Save & Mark for Review',
+                    style: TextStyle(fontSize: 12),
                   ),
                 ),
               ),
@@ -468,10 +471,10 @@ class TestPlayerView extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => controller.markForReviewAndNext(),
                   label: const Text(
-                    'Mark & Next',
-                    style: TextStyle(fontSize: 13),
+                    'Mark for Review & Next',
+                    style: TextStyle(fontSize: 12),
                   ),
-                  icon: const Icon(Icons.bookmark_border_rounded, size: 16),
+                  // icon: const Icon(Icons.bookmark_border_rounded, size: 16),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF59E0B),
                     foregroundColor: Colors.white,
@@ -490,7 +493,7 @@ class TestPlayerView extends StatelessWidget {
                   onPressed: () => controller.saveAndNext(),
                   label: const Text(
                     'Save & Next',
-                    style: TextStyle(fontSize: 13),
+                    style: TextStyle(fontSize: 12),
                   ),
                   icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                   style: ElevatedButton.styleFrom(
@@ -938,7 +941,7 @@ class TestPlayerView extends StatelessWidget {
               child: Text(
                 number.toString(),
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: textColor,
                 ),
@@ -958,6 +961,40 @@ class TestPlayerView extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showRetestConfirmation(TestPlayerController controller) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.refresh_rounded, color: Color(0xFF8B5CF6)),
+            SizedBox(width: 12),
+            Text('Exit?'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to retake close this test? All your current answers will be cleared.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Get.offAllNamed(AppRoutes.home);
+            },
+            icon: const Icon(Icons.restart_alt_rounded, size: 18),
+            label: const Text('Exit'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+            ),
+          ),
+        ],
       ),
     );
   }

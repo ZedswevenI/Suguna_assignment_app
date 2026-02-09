@@ -17,7 +17,7 @@ class AssignmentInstructionsController extends GetxController {
 
   void onAccept() {
     // Navigate to test player
-    Get.toNamed(AppRoutes.testPlayer);
+    Get.toNamed(AppRoutes.testPlayer,arguments: Get.arguments);
   }
 
   void onDecline() {

@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:suguna_assignment_app/modules/test_analysis/controllers/test_analysis_controller.dart';
+import '../../test_player/controllers/test_player_controller.dart';
 
 class TestAnalysisBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => TestAnalysisController());
+    Get.lazyPut(() => TestPlayerController(),fenix: true);
   }
 }

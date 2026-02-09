@@ -11,9 +11,19 @@ class SubjectModel {
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
     return SubjectModel(
-      id: json['subjectId'],
-      name: json['subjectName'],
-      classInfo: 'Class ${json['classNo']}',
+      id: (json['subjectId'] ?? json['_id'] ?? '').toString(),
+      name: (json['subjectName'] ?? json['name'] ?? '').toString(),
+      classInfo: json['classNo'] != null
+          ? 'Class ${json['classNo']}'
+          : '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subjectId': id,
+      'subjectName': name,
+      'classNo': classInfo.replaceAll('Class ', ''),
+    };
   }
 }

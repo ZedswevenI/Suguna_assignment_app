@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:suguna_assignment_app/core/constants/app_constants.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
 import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 import 'package:suguna_assignment_app/core/utils/responsive_helper.dart';
 import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
-import 'package:suguna_assignment_app/data/models/subject_model.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/controllers/topic_assignments_controller.dart';
 import '../../../core/widgets/score_circle.dart';
 import '../../../data/models/topic_model.dart';
 
 class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
   const TopicAssignmentsView({super.key});
-
-  static const List<String> _columns = [
-    'Board',
-    'JEE Main',
-    'JEE Advanced',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +52,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
           ],
         ),
       );
-    }
-    );
+    });
   }
 
   // ============================================================
@@ -240,16 +231,18 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
   }
 
   // ============================================================
-  // MODERN MATRIX WITH ELEVATED CARD DESIGN
+  // MODERN MATRIX WITH HIERARCHICAL HEADERS
   // ============================================================
 
   Widget _buildModernMatrix() {
     return Obx(() {
       final topic = controller.selectedTopic;
-
       if (topic == null) {
         return _buildEmptyState();
       }
+      // Get all categories and subcategories
+      final Map<String, List<String>> categorySubcategories =
+      _extractCategoryStructure(topic);
 
       return Container(
         decoration: BoxDecoration(
@@ -270,14 +263,15 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildModernHeader(),
+              _buildHierarchicalHeader(categorySubcategories),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: topic.subtopics
-                        .map((s) => _buildModernDataRow(s))
+                        .map((s) => _buildModernDataRow(s, categorySubcategories))
                         .toList(),
                   ),
                 ),
@@ -288,6 +282,306 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
         ),
       );
     });
+  }
+
+  // ============================================================
+  // EXTRACT CATEGORY STRUCTURE FROM SCORES
+  // ============================================================
+
+  Map<String, List<String>> _extractCategoryStructure(TopicModel topic) {
+    final Map<String, List<String>> structure = {};
+
+    // Iterate through all subtopics to collect categories and subcategories
+    for (final subtopic in topic.subtopics) {
+      for (final category in subtopic.scores.keys) {
+        if (!structure.containsKey(category)) {
+          structure[category] = [];
+        }
+        for (final subcategory in subtopic.scores[category]!.keys) {
+          if (!structure[category]!.contains(subcategory)) {
+            structure[category]!.add(subcategory);
+          }
+        }
+      }
+    }
+
+    // Sort subcategories for consistent ordering
+    structure.forEach((key, value) {
+      value.sort();
+    });
+
+    return structure;
+  }
+
+  // ============================================================
+  // HIERARCHICAL HEADER
+  // ============================================================
+
+  Widget _buildHierarchicalHeader(
+      Map<String, List<String>> categorySubcategories) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFF8F9FC),
+            Colors.white.withOpacity(0.9),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.border.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Subtopic Label
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Text(
+                'Subtopic',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary.withOpacity(0.7),
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+          ),
+          // Category and Subcategory Headers
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ...categorySubcategories.entries.map((entry) {
+                  final category = entry.key;
+                  final subcategories = entry.value;
+                  return Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Category Header
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.08),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color:
+                                  AppColors.primary.withOpacity(0.15),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Subcategory Headers
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: subcategories.map((subcategory) {
+                              return Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      right: BorderSide(
+                                        color: AppColors.primary
+                                            .withOpacity(0.1),
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      _extractSubcategoryLabel(subcategory),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary
+                                            .withOpacity(0.7),
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ).marginOnly(right: 20),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                })
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // EXTRACT SUBCATEGORY LABEL
+  // ============================================================
+
+  String _extractSubcategoryLabel(String subcategory) {
+    // Extract meaningful label from subcategory code
+    // E.g., "JEEMB" -> "JEEMB", "CBSEB" -> "CBSEB"
+    return subcategory.length > 6 ? subcategory.substring(0, 6) : subcategory;
+  }
+
+  // ============================================================
+  // MODERN DATA ROW - CIRCLES CENTERED UNDER SUBCATEGORIES
+  // ============================================================
+
+  Widget _buildModernDataRow(
+      SubtopicModel subtopic,
+      Map<String, List<String>> categorySubcategories,
+      ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.8),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Subtopic Name (Left Column)
+          Expanded(
+            flex: 1,
+            child: Text(
+              subtopic.name,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          // Circles organized by Category and Subcategory
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ...categorySubcategories.entries.map((categoryEntry) {
+                  final category = categoryEntry.key;
+                  final subcategories = categoryEntry.value;
+                  return Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: subcategories.map((subcategory) {
+                        final assignments = subtopic.scores[category]?[subcategory] ?? [];
+                        return Expanded(
+                          child: Column(
+                            // ✅ CENTER CIRCLES VERTICALLY
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            // ✅ CENTER CIRCLES HORIZONTALLY
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: assignments.isEmpty
+                                ? [_buildEmptyDot()]
+                                : assignments.map((assignment) {
+                              return assignment.testId == ''
+                                  ? Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 8),
+                                child: _buildEmptyDot(),
+                              )
+                                  : Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 8),
+                                child: ModernAssignmentDot(
+                                  state: controller.getCircleState(
+                                    subtopic.id,
+                                    category,
+                                    assignment.testId,
+                                  ),
+                                  selected: controller
+                                      .isSubtopicSelected(
+                                    subtopic.id,
+                                    category,
+                                    assignment.testId,
+                                  ),
+                                  onTap: () =>
+                                      controller.onCircleTap(
+                                        subtopic.id,
+                                        category,
+                                        assignment.testId,
+                                        assignment.status == "ASSIGNED",
+                                        subtopic,
+                                          subcategory
+                                      ),
+                                  status:
+                                  controller
+                                      .getAssignmentStatus(
+                                    subtopic.id,
+                                    category,
+                                    assignment.testId,
+                                    assignment.status,
+                                  ),
+                                  scoreLevel:
+                                  controller.getScoreLevel(
+                                    assignment.cgpa,
+                                    assignment.status,
+                                  ),
+                                  score: assignment.cgpa,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDot() {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.transparent,
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+    );
   }
 
   Widget _buildEmptyState() {
@@ -319,165 +613,6 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFF8F9FC),
-            Colors.white.withOpacity(0.9),
-          ],
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border.withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 280,
-            child: Text(
-              'Subtopic',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary.withOpacity(0.7),
-                letterSpacing: 0.8,
-              ),
-            ),
-          ),
-          ..._columns.map(
-                (c) => SizedBox(
-              width: 140,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    c,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernDataRow(SubtopicModel subtopic) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.8),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // =======================
-          // Subtopic Name
-          // =======================
-          SizedBox(
-            width: 280,
-            child: Text(
-              subtopic.name,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-
-          // =======================
-          // Exam Category Columns
-          // =======================
-          ..._columns.map((col) {
-            final tests = subtopic.scores[col] ?? [];
-
-            return SizedBox(
-              width: 140,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: tests.isEmpty
-                    ? [_buildEmptyDot()]
-                    : tests.map((test) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: ModernAssignmentDot(
-                      state: controller.getCircleState(
-                        subtopic.id,
-                        col,
-                        test.testId,
-                      ),
-                      selected: controller.isSubtopicSelected(
-                        subtopic.id,
-                        col,
-                        test.testId,
-                      ),
-                      onTap: () => controller.onCircleTap(
-                        subtopic.id,
-                        col,
-                        test.testId,
-                      ),
-                      status: controller.getAssignmentStatus(
-                        subtopic.id,
-                        col,
-                        test.testId,
-                      ),
-                      scoreLevel: controller.getScoreLevel(
-                        subtopic.id,
-                        col,
-                        test.testId,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyDot() {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.transparent,
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.3),
-          width: 1,
         ),
       ),
     );
@@ -527,9 +662,9 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children:  [
                   Text(
-                    'Start Assignment',
+                    controller.isTestCompleted.value ? "View result" : 'Start Assignment',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -554,19 +689,19 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
 // ============================================================
 
 enum AssignmentStatus {
-  notOpened,      // Black - not yet opened by teacher
-  available,      // White - opened and ready to attempt
-  locked,         // Grey - opened but need previous level(s)
-  attempted,      // Has score (use scoreLevel for color)
+  notOpened,
+  available,
+  locked,
+  attempted,
 }
 
 enum ScoreLevel {
-  none,           // No score yet
-  extremelyPoor,  // Red
-  poor,           // Light Red
-  notGood,        // Orange
-  moderate,       // Yellow
-  satisfactory,   // Light Green
+  none,
+  extremelyPoor,
+  poor,
+  notGood,
+  moderate,
+  satisfactory,
 }
 
 class ModernAssignmentDot extends StatefulWidget {
@@ -575,12 +710,14 @@ class ModernAssignmentDot extends StatefulWidget {
   final VoidCallback onTap;
   final AssignmentStatus? status;
   final ScoreLevel? scoreLevel;
+  final double? score;
 
   const ModernAssignmentDot({
     super.key,
     required this.state,
     required this.selected,
     required this.onTap,
+    this.score,
     this.status,
     this.scoreLevel,
   });
@@ -593,6 +730,7 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _isHovered = false;
+
 
   @override
   void initState() {
@@ -627,13 +765,13 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
         ),
       );
-    } else if (widget.state == CircleState.downloaded) {
+    } else if (widget.state == CircleState.downloaded && widget.scoreLevel == null) {
       color = const Color(0xFF10B981); // Green
       borderColor = const Color(0xFF34D399);
       icon = const Icon(Icons.check_rounded, size: 18, color: Colors.white);
     } else {
       // Use status and scoreLevel for other states
-      if (widget.status == AssignmentStatus.attempted && widget.scoreLevel != null) {
+      if (widget.scoreLevel != null) {
         // Show color based on score
         switch (widget.scoreLevel!) {
           case ScoreLevel.extremelyPoor:
@@ -641,20 +779,20 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
             borderColor = const Color(0xFFEF4444);
             break;
           case ScoreLevel.poor:
-            color = const Color(0xFFF87171); // Light Red
-            borderColor = const Color(0xFFFCA5A5);
-            break;
-          case ScoreLevel.notGood:
             color = const Color(0xFFF97316); // Orange
             borderColor = const Color(0xFFFB923C);
             break;
-          case ScoreLevel.moderate:
+          case ScoreLevel.notGood:
             color = const Color(0xFFFBBF24); // Yellow
             borderColor = const Color(0xFFFCD34D);
             break;
-          case ScoreLevel.satisfactory:
+          case ScoreLevel.moderate:
             color = const Color(0xFF84CC16); // Light Green
             borderColor = const Color(0xFFA3E635);
+            break;
+          case ScoreLevel.satisfactory:
+            color = const Color(0xFF426A00); // Light Green
+            borderColor = const Color(0xFF416700);
             break;
           case ScoreLevel.none:
             color = const Color(0xFFE5E7EB);
@@ -672,9 +810,10 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
             borderColor = const Color(0xFFD1D5DB);
             break;
           case AssignmentStatus.locked:
-            color = const Color(0xFF9CA3AF); // Grey
+            color = const Color(0xFF000000); // Grey
             borderColor = const Color(0xFFD1D5DB);
-            icon = const Icon(Icons.lock_outline_rounded, size: 14, color: Colors.white);
+            icon = const Icon(Icons.lock_outline_rounded,
+                size: 14, color: Colors.white);
             break;
           case AssignmentStatus.attempted:
             color = const Color(0xFFE5E7EB);
@@ -696,13 +835,13 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            final scale = 1.0 - (_controller.value * 0.1);
+            final scale = 1 - (_controller.value * 0.08);
             return Transform.scale(
               scale: scale,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: _isHovered || widget.selected ? 46 : 42,
-                height: _isHovered || widget.selected ? 46 : 42,
+                width: _isHovered || widget.selected ? 56 : 48,
+                height: _isHovered || widget.selected ? 56 : 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -728,7 +867,9 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
                       ),
                   ],
                 ),
-                child: icon == null ? null : Center(child: icon),
+                child:  widget.scoreLevel != null && widget.score != null ? Center(
+                  child: Text("${widget.score}",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 12),),
+                ) :   icon == null ? null : Center(child: icon),
               ),
             );
           },

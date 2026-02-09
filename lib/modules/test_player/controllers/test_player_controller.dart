@@ -1,30 +1,133 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:suguna_assignment_app/data/services/sessions.dart';
+import 'package:suguna_assignment_app/modules/test_analysis/views/test_analysis_view.dart';
 import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_parser.dart';
 import '../../../data/models/subject_model.dart';
+import '../../../data/services/store_service.dart';
+import '../../topic_assignments/controllers/topic_assignments_controller.dart';
 import '../views/test_review_view.dart';
 
 class TestPlayerController extends GetxController {
-
+  final TextEditingController numericalController = TextEditingController();
   final Rx<SubjectModel?> selectedSubject = Rx<SubjectModel?>(null);
   void updateView() => update(['palette']);
+  void updateNewView() => update(['new']);
+
   final textSize = 1.obs;
   List<QuestionCategory> categories = [];
   bool isLoading = true;
 
+  final storage = Get.find<StorageService>();
+  late String currentTestId;
+  final bookmarkedQuestions = <String>{}.obs;
+
+  Map<String,dynamic> selectedQuestions = {};
 
   @override
   void onInit() {
     super.onInit();
     // Load actual API data
-    loadTestData(_getApiResponse());
-    _startTimer();
+    initData();
+  }
+  Future<void> initData() async {
+    // final args = Get.arguments;
+    if (Session.instance.storedData != null) {
+      if(!Session.instance.isRetest) {
+        currentTestId = Session.instance.storedData!['testId'];
+        final stored = Session.instance.storedData!['storedData'];
+        categories = await TestApiParser.parseFromJsonString(
+          stored['testJson'],
+        );
+        selectedQuestions = stored['testJson'];
+        correctAnswersMap = Map<String, dynamic>.from(stored['result']);
+        _restoreUserAnswers(stored['result']['answers']);
+        _loadBookmarks();
+        updateNewView();
+      } else {
+        takeRetest();
+      }
+    } else {
+      startTestAgain();
+    }
+  }
+
+  void _restoreUserAnswers(List<dynamic> savedAnswers) {
+    final allQuestions = getAllQuestions();
+    for (var saved in savedAnswers) {
+      final number = saved['questionNumber'];
+      final question =
+      allQuestions.firstWhere((q) => q.number == number);
+
+      final userAnswer = saved['userAnswer'];
+
+      switch (question.type) {
+        case QuestionType.mcqSingle:
+        case QuestionType.trueFalse:
+        case QuestionType.singleDropdown:
+          question.selectedAnswer =
+          userAnswer.isNotEmpty ? userAnswer : null;
+          break;
+
+        case QuestionType.mcqMultiple:
+        case QuestionType.multiDropdown:
+          question.selectedAnswers =
+          userAnswer.isNotEmpty ? userAnswer.split(';') : [];
+          break;
+
+        case QuestionType.numerical:
+          question.numericalAnswer =
+              double.tryParse(userAnswer);
+          break;
+
+        case QuestionType.textType:
+        case QuestionType.subjective:
+          question.textAnswer = userAnswer;
+          break;
+
+        case QuestionType.matchTheFollowing:
+          final map = <String, String>{};
+          for (var pair in userAnswer.split(';')) {
+            final parts = pair.split(':');
+            if (parts.length == 2) {
+              map[parts[0]] = parts[1];
+            }
+          }
+          question.matchAnswers = map;
+          break;
+      }
+    }
+  }
+
+  void startTestAgain() {
+    final args = Get.arguments;
+    try {
+      currentTestId = args['testId'];
+      selectedQuestions = TopicAssignmentsController.to.selectedQuestions  ?? {};
+      loadTestData(_getApiResponse());
+      _startTimer();
+    } catch (e){
+      selectedQuestions = TopicAssignmentsController.to.selectedQuestions  ?? {};
+      loadTestData(_getApiResponse());
+      _startTimer();
+    }
+  }
+
+
+   void takeRetest() async {
+     isLoading = true;
+     updateView();
+     categories.clear();
+     currentTestId = Session.instance.storedData!['testId'];
+     selectedQuestions = Session.instance.storedData!['storedData']['testJson'];
+     final Map<String, dynamic> jsonData = selectedQuestions;
+     categories.addAll(await TestApiParser.parseFromJsonString(jsonData));
+     isLoading = false;
+     _startTimer();
+     updateView();
   }
 
   // Method to load test data from API
@@ -32,7 +135,8 @@ class TestPlayerController extends GetxController {
     isLoading = true;
     updateView();
     categories.clear();
-    categories.addAll(await TestApiParser.parseFromJsonString(jsonString));
+    final Map<String, dynamic> jsonData = TopicAssignmentsController.to.selectedQuestions ?? {};
+    categories.addAll(await TestApiParser.parseFromJsonString(jsonData));
     isLoading = false;
     updateView();
   }
@@ -47,131 +151,6 @@ class TestPlayerController extends GetxController {
     ''';
   }
 
-  //
-  // final categories = <QuestionCategory>[
-  //   QuestionCategory(
-  //     id: 'algebra',
-  //     name: 'Algebra',
-  //     questionCount: 15,
-  //     questions: [
-  //       Question(
-  //         number: 1,
-  //         text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
-  //         type: QuestionType.mcqSingle,
-  //         options: ['\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3'],
-  //       ),
-  //       Question(
-  //         number: 2,
-  //         text: 'Exponents with their correct number of digits : \\(\\log 2 = 0.301 \\\\ \\log 3 = 0.4771\\) COLUMN - ICOLUMN - II',
-  //         type: QuestionType.mcqMultiple,
-  //         options: ['\\(\\log \\left(\\right. 3 x - 2 \\left.\\right) = 1\\) (S) 3', '\\(l o g_{3} x = \\frac{1}{2}\\) (R) \\(\\frac{1}{8}\\)', '\\(l o g_{625} \\sqrt{5}\\) (Q) \\(3^{\\frac{1}{2}}\\)', '\\(3 \\log 5 + 2 \\log 4 - \\log 2\\) (P) 4',],
-  //         selectedAnswers: [],
-  //       ),
-  //       Question(
-  //         number: 3,
-  //         text: 'Match the following algebraic terms with their types:',
-  //         type: QuestionType.matchTheFollowing,
-  //         matchPairs: [
-  //           MatchPair(left: '3x²', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-  //           MatchPair(left: '5', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-  //           MatchPair(left: '2x', rightOptions: ['Constant', 'Linear', 'Quadratic', 'Cubic']),
-  //         ],
-  //         matchAnswers: {},
-  //       ),
-  //       Question(
-  //         number: 4,
-  //         text: 'Ratio of any two sides of an equilateral \\(\\triangle\\) is always ____________',
-  //         type: QuestionType.numerical,
-  //         minRange: 0,
-  //         maxRange: 100,
-  //       ),
-  //       Question(
-  //         number: 5,
-  //         text: 'Is the equation x + 5 = 5 + x an example of commutative property?',
-  //         type: QuestionType.trueFalse,
-  //         options: ['True', 'False'],
-  //       ),
-  //       Question(
-  //         number: 6,
-  //         text: 'What is the degree of polynomial 3x³ + 2x² - 5x + 1?',
-  //         type: QuestionType.singleDropdown,
-  //         options: ['0', '1', '2', '3', '4'],
-  //       ),
-  //       Question(
-  //         number: 7,
-  //         text: 'Select all valid operations that preserve equality:',
-  //         type: QuestionType.multiDropdown,
-  //         options: ['Add same number to both sides', 'Multiply by zero', 'Divide by same non-zero number', 'Square both sides'],
-  //         selectedAnswers: [],
-  //       ),
-  //       Question(
-  //         number: 8,
-  //         text: 'Enter the factored form of x² - 9',
-  //         type: QuestionType.textType,
-  //       ),
-  //       Question(
-  //         number: 9,
-  //         text: 'Explain the steps to solve a quadratic equation using the quadratic formula.',
-  //         type: QuestionType.subjective,
-  //       ),
-  //       ...List.generate(6, (i) => Question(
-  //         number: i + 10,
-  //         text: 'Sample algebra question ${i + 10}',
-  //         type: QuestionType.mcqSingle,
-  //         options: ['Option A', 'Option B', 'Option C', 'Option D'],
-  //       )),
-  //     ],
-  //   ),
-  //   QuestionCategory(
-  //     id: 'graphs',
-  //     name: 'Graphs',
-  //     questionCount: 3,
-  //     questions: [
-  //       Question(
-  //         number: 16,
-  //         text: 'What is the slope of a horizontal line?',
-  //         type: QuestionType.numerical,
-  //         minRange: -10,
-  //         maxRange: 10,
-  //       ),
-  //       Question(
-  //         number: 17,
-  //         text: 'Comprehension Logarithmic Inequalities statement \\(0 < a < 1\\) \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\leq c\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\leq_{a} c a >\\) 1 \\(l o g_{a} b \\geq l o g_{a} c \\Rightarrow b \\geq c > 0\\) \\(l o g_{a} b \\geq c \\Rightarrow b \\geq a^{c}\\) -- * -- Question :Which one of the following is least',
-  //         type: QuestionType.trueFalse,
-  //         options: ['True', 'False'],
-  //       ),
-  //       Question(
-  //         number: 18,
-  //         text: 'Describe how to find the equation of a line given two points.',
-  //         type: QuestionType.subjective,
-  //       ),
-  //     ],
-  //   ),
-  //   QuestionCategory(
-  //     id: 'theory',
-  //     name: 'Theory',
-  //     questionCount: 2,
-  //     questions: [
-  //       Question(
-  //         number: 19,
-  //         text: 'What does the Fundamental Theorem of Algebra state?',
-  //         type: QuestionType.mcqSingle,
-  //         options: [
-  //           'Every polynomial has at least one root',
-  //           'All polynomials are factorable',
-  //           'Algebra is fundamental',
-  //           'None of the above'
-  //         ],
-  //       ),
-  //       Question(
-  //         number: 20,
-  //         text: 'Explain the concept of mathematical induction.',
-  //         type: QuestionType.subjective,
-  //       ),
-  //     ],
-  //   ),
-  // ];
-
   void selectAnswer(String answer) {
     final question = currentQuestion;
 
@@ -180,7 +159,6 @@ class TestPlayerController extends GetxController {
       case QuestionType.trueFalse:
       case QuestionType.singleDropdown:
         question.selectedAnswer = answer;
-        print("Selected one ${answer}");
         break;
       case QuestionType.mcqMultiple:
       case QuestionType.multiDropdown:
@@ -274,6 +252,7 @@ class TestPlayerController extends GetxController {
   void selectQuestion(int categoryIndex, int questionIndex) {
     currentCategoryIndex.value = categoryIndex;
     currentQuestionIndex.value = questionIndex;
+    _syncNumericalField();
     updateView();
   }
 
@@ -286,11 +265,47 @@ class TestPlayerController extends GetxController {
   // }
 
   void saveAndNext() {
-    if (currentQuestion.selectedAnswer != null) {
-      currentQuestion.status = QuestionStatus.answered;
-    } else {
-      currentQuestion.status = QuestionStatus.notAnswered;
+    final question = currentQuestion;
+
+    bool isAnswered = false;
+
+    switch (question.type) {
+      case QuestionType.mcqSingle:
+      case QuestionType.trueFalse:
+      case QuestionType.singleDropdown:
+        isAnswered = question.selectedAnswer != null;
+        break;
+
+      case QuestionType.mcqMultiple:
+      case QuestionType.multiDropdown:
+        isAnswered =
+            question.selectedAnswers != null &&
+                question.selectedAnswers!.isNotEmpty;
+        break;
+
+      case QuestionType.matchTheFollowing:
+        isAnswered =
+            question.matchAnswers != null &&
+                question.matchAnswers!.isNotEmpty &&
+                question.matchAnswers!.length ==
+                    question.matchPairs?.length;
+        break;
+
+      case QuestionType.numerical:
+        isAnswered = question.numericalAnswer != null;
+        break;
+
+      case QuestionType.textType:
+      case QuestionType.subjective:
+        isAnswered =
+            question.textAnswer != null &&
+                question.textAnswer!.trim().isNotEmpty;
+        break;
     }
+
+    question.status =
+    isAnswered ? QuestionStatus.answered : QuestionStatus.notAnswered;
+
     _goToNextQuestion();
   }
 
@@ -301,6 +316,7 @@ class TestPlayerController extends GetxController {
     question.matchAnswers = null;
     question.numericalAnswer = null;
     question.textAnswer = null;
+    numericalController.clear();  // 👈 clears UI instantly
 
     if (question.status == QuestionStatus.answeredAndMarked) {
       question.status = QuestionStatus.markedForReview;
@@ -314,7 +330,7 @@ class TestPlayerController extends GetxController {
     } else {
       currentQuestion.status = QuestionStatus.markedForReview;
     }
-    updateView();
+    _goToNextQuestion();
   }
 
   void markForReviewAndNext() {
@@ -337,13 +353,29 @@ class TestPlayerController extends GetxController {
   }
 
   void _goToNextQuestion() {
+    numericalController.clear();
     if (currentQuestionIndex.value < currentCategory.questions.length - 1) {
       currentQuestionIndex.value++;
     } else if (currentCategoryIndex.value < categories.length - 1) {
       currentCategoryIndex.value++;
       currentQuestionIndex.value = 0;
     }
+    _syncNumericalField();
     updateView();
+  }
+
+  void _syncNumericalField() {
+    final question = currentQuestion;
+    if (question.type == QuestionType.numerical) {
+      if (question.numericalAnswer != null) {
+        numericalController.text =
+            question.numericalAnswer.toString();
+      } else {
+        numericalController.clear();
+      }
+    } else {
+      numericalController.clear();
+    }
   }
 
   Map<QuestionStatus, int> getCategoryStats(int categoryIndex) {
@@ -445,18 +477,26 @@ class TestPlayerController extends GetxController {
     );
 
     // TODO: auto submit test
-    submitTest();
+    // submitTest();
   }
 
   void submitTest() {
     _timer?.cancel();
+    Get.snackbar("Success", "Your has been submitted successfully",backgroundColor: Colors.green);
     // API submit call here
   }
 
   // ================= UI HELPERS =================
   String get formattedTime {
-    final minutes = remainingSeconds.value ~/ 60;
+    final minutes = (remainingSeconds.value) ~/ 60;
     final seconds = remainingSeconds.value % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  // ================= UI HELPERS =================
+  String get takenTime {
+    final minutes = (totalDurationSeconds - remainingSeconds.value) ~/ 60;
+    final seconds = (totalDurationSeconds - remainingSeconds.value) % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
@@ -486,7 +526,7 @@ class TestPlayerController extends GetxController {
 // Add these variables at the top with your other state variables:
   final reviewIndex = 0.obs;
   final isTestCompleted = false.obs;
-  Map<String, String> correctAnswersMap = {}; // Will be populated from parser
+  Map<String, dynamic> correctAnswersMap = {}; // Will be populated from parser
 
 // ============================================================
 // RESULT & REVIEW METHODS
@@ -502,6 +542,7 @@ class TestPlayerController extends GetxController {
     final allQuestions = getAllQuestions();
     if (allQuestions.isEmpty || reviewIndex.value >= allQuestions.length) {
       return Question(
+        questionId: '',
         number: 0,
         text: 'No question',
         type: QuestionType.mcqSingle,
@@ -550,8 +591,14 @@ class TestPlayerController extends GetxController {
 
       case QuestionType.numerical:
       // For numerical, parse and compare
+      if(correctAnswer is bool) {
+        final correctNum = double.tryParse('0');
+        return question.numericalAnswer == correctNum;
+      } else {
         final correctNum = double.tryParse(correctAnswer);
         return question.numericalAnswer == correctNum;
+      }
+
 
       case QuestionType.textType:
       case QuestionType.subjective:
@@ -581,7 +628,6 @@ class TestPlayerController extends GetxController {
   /// Check if specific option is the correct answer
   bool isOptionCorrect(Question question, String option) {
     final correctAnswer = correctAnswersMap['question_${question.number}'];
-    print("Is correct ${correctAnswersMap['question_${question.number}']} ${question.selectedAnswer}");
     if (correctAnswer == null) return false;
 
     if (question.type == QuestionType.mcqMultiple) {
@@ -602,7 +648,7 @@ class TestPlayerController extends GetxController {
 
   /// Get correct answer text for display
   String getCorrectAnswer(Question question) {
-    return correctAnswersMap['question_${question.number}'] ?? 'N/A';
+    return correctAnswersMap['question_${question.number}'] is bool ? "0" : correctAnswersMap['question_${question.number}'] ?? 'N/A';
   }
 
   /// Get user's answer formatted for display
@@ -636,10 +682,7 @@ class TestPlayerController extends GetxController {
         return question.matchAnswers!.entries
             .map((e) => '${e.key} → ${e.value}')
             .join(', ');
-
-      default:
-        return 'Not Answered';
-    }
+      }
   }
 
   /// Get correct answer formatted for display
@@ -672,7 +715,7 @@ class TestPlayerController extends GetxController {
         'wrong': 0,
         'skipped': 0,
         'percentage': 0.0,
-        'timeSpent': formattedTime,
+        'timeSpent': takenTime
       };
     }
 
@@ -689,7 +732,13 @@ class TestPlayerController extends GetxController {
         wrong++;
       }
     }
+    String timeSpend = takenTime;
+    if(Session.instance.storedData != null && !Session.instance.isRetest) {
 
+      final minutes = Session.instance.storedData!['storedData']['result']['timeSpentSeconds'] ~/ 60;
+      final seconds = Session.instance.storedData!['storedData']['result']['timeSpentSeconds'] % 60;
+      timeSpend ='${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
     final percentage = (correct / allQuestions.length) * 100;
 
     return {
@@ -698,7 +747,7 @@ class TestPlayerController extends GetxController {
       'wrong': wrong,
       'skipped': skipped,
       'percentage': percentage,
-      'timeSpent': formattedTime,
+      'timeSpent': timeSpend,
     };
   }
 
@@ -707,8 +756,64 @@ class TestPlayerController extends GetxController {
     return isQuestionCorrect(question);
   }
 
-  /// Complete test and show results
   void completeTest() {
+    final TextEditingController confirmController = TextEditingController();
+    final RxBool isValid = false.obs;
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Confirm Submission'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Type SUBMIT below to confirm test submission.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: confirmController,
+              onChanged: (value) {
+                isValid.value = value.trim().toUpperCase() == "SUBMIT";
+              },
+              decoration: InputDecoration(
+                hintText: 'Type SUBMIT',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          Obx(() => ElevatedButton(
+            onPressed: isValid.value
+                ? () {
+              Get.back();
+              finalCompleteTest();
+            }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+            ),
+            child: const Text('Submit Test'),
+          )),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  /// Complete test and show results
+  void finalCompleteTest() {
     _timer?.cancel();
     _stopBlinking();
     isTestCompleted.value = true;
@@ -716,19 +821,21 @@ class TestPlayerController extends GetxController {
 
     // Navigate to result screen
     // Get.to(() => TestResultView());
-    Get.off(() => const TestResultView());
-
+    final Map<String, dynamic> results = _prepareResultsForSubmission();
+    storage.save('test_$currentTestId', {
+      "testJson": selectedQuestions,
+      "result": results,
+      "completed": true,
+      "timestamp": DateTime.now().toIso8601String(),
+    });
+    // Get.off(() => const TestResultView());
+    Get.off(() => const TestAnalysisView());
 }
 
   /// Submit test results to server
   Future<void> submitTestResults() async {
     try {
       final results = _prepareResultsForSubmission();
-
-      // TODO: Replace with your actual API call
-      // final _apiService = ServiceLocator.get<AssignmentApiServices>();
-      // await _apiService.submitTestResults(results);
-
       print('Results to submit: ${json.encode(results)}');
 
       Get.snackbar(
@@ -813,10 +920,69 @@ class TestPlayerController extends GetxController {
         return question.matchAnswers?.entries
             .map((e) => '${e.key}:${e.value}')
             .join(';') ?? '';
+      }
+  }
 
-      default:
-        return '';
+  Map<String, dynamic> getPerformanceReport() {
+    final allQuestions = getAllQuestions();
+
+    int correct = 0;
+    int wrong = 0;
+    int skipped = 0;
+
+    for (var question in allQuestions) {
+      if (isQuestionSkipped(question)) {
+        skipped++;
+      } else if (isQuestionCorrect(question)) {
+        correct++;
+      } else {
+        wrong++;
+      }
     }
+
+    const double positiveMarkPerQuestion = 3.0;
+    const double negativeMarkPerQuestion = 1.0; // change if needed
+
+    final double positiveMarks = correct * positiveMarkPerQuestion;
+    final double negativeMarks = wrong * negativeMarkPerQuestion;
+    final double totalScore = positiveMarks - negativeMarks;
+
+    return {
+      "totalQuestions": allQuestions.length,
+      "correct": correct,
+      "wrong": wrong,
+      "skipped": skipped,
+      "positiveMarks": positiveMarks,
+      "negativeMarks": negativeMarks,
+      "totalScore": totalScore,
+    };
+  }
+
+
+  bool isBookmarked(String questionNumber) {
+    return bookmarkedQuestions.contains(questionNumber);
+  }
+
+  void _loadBookmarks() {
+    final stored = storage.read('bookmarks_$currentTestId');
+    if (stored != null && stored is List) {
+      bookmarkedQuestions.assignAll(
+        stored.map((e) => e.toString()).toList(),
+      );
+    }
+  }
+
+  void toggleBookmark(String questionNumber) {
+    if (bookmarkedQuestions.contains(questionNumber)) {
+      bookmarkedQuestions.remove(questionNumber);
+    } else {
+      bookmarkedQuestions.add(questionNumber);
+    }
+    storage.save(
+      'bookmarks_$currentTestId',
+      bookmarkedQuestions.toList(),
+    );
+    updateNewView();
   }
 
 // ============================================================

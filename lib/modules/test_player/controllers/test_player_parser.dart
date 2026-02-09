@@ -49,6 +49,7 @@ class QuestionCategory {
 class Question {
   final int number;
   final String text;
+  final String questionId;
   final QuestionType type;
   final List<String> options;
   final List<MatchPair>? matchPairs;
@@ -75,6 +76,7 @@ class Question {
     required this.number,
     required this.text,
     required this.type,
+    required this.questionId,
     this.options = const [],
     this.matchPairs,
     this.minRange,
@@ -149,51 +151,46 @@ class TestApiParser {
 
 
   // Parse from JSON string
-  static Future<List<QuestionCategory>> parseFromJsonString(String jsonString) async {
+  static Future<List<QuestionCategory>> parseFromJsonString(Map<String, dynamic> jsonString) async {
     try {
-      // final Map<String, dynamic> jsonData =await loadQuestionsJson();
-      // TopicAssignmentsController.to.selectedQuestions ??
-     final Map<String, dynamic> jsonData = await loadQuestionsJson();
-      return parseApiResponse(jsonData);
+      final Map<String, dynamic> jsons =   await loadQuestionsJson();
+      return parseApiResponse(jsonString);
     } catch (e) {
       print('Error parsing JSON string: $e');
       return [];
     }
   }
 
+
   // Main parser for API response
   static List<QuestionCategory> parseApiResponse(
       Map<String, dynamic> jsonData,
       ) {
     try {
-      final List<dynamic> dataList = jsonData['data'] as List<dynamic>;
-      if (dataList.isEmpty) return [];
+      final Map<String, dynamic> correctAnswersMap = {};
+      final testData = jsonData['data'] as Map<String, dynamic>;
 
-      final Map<String, String> correctAnswersMap = {};
-
-
-      final testData = dataList[0] as Map<String, dynamic>;
       final List<dynamic> questionsJson =
       testData['questions'] as List<dynamic>;
-
       final Map<QuestionType, List<Question>> questionsByType = {};
 
       for (int i = 0; i < questionsJson.length; i++) {
         final qJson = questionsJson[i] as Map<String, dynamic>;
-
-        final correctAnswer = qJson['correctAnswer'] as String?;
+        final correctAnswer = qJson['correctAnswer'];
 
         final questionTypeFromApi =
             qJson['questionType'] as String? ?? 'mcq_single';
         final parsedType = _parseQuestionType(questionTypeFromApi);
         final question = Question(
+          questionId: qJson['questionId'] as String? ?? '',
           number: i + 1,
           text: qJson['questionText'] as String? ?? '',
           questionHtml: qJson['questionHtml'] as String?,
           type: parsedType,
           options: _parseOptions(
-            qJson['options'] as List<dynamic>? ?? [],
+            qJson['questionOptions'] as List<dynamic>? ?? [],
           ),
+
           status: QuestionStatus.notVisited,
         );
         if (correctAnswer != null) {

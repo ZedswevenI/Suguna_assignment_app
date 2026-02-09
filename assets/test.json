@@ -1,1365 +1,274 @@
 {
   "status": true,
-  "data": [
-    {
-      "testId": "1496",
-      "class": {
-        "_id": "693115d2f1825d21120be089",
-        "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-        "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-        "className": "12th",
-        "description": "12th",
+  "data": {
+    "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+    "testNo": "2001",
+    "questions": [
+      {
+        "_id": "69861e554f28e874eff14c32",
+        "tenantId": "69005a54-19bc-40c1-bff2-646e4d40563b",
+        "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+        "questionId": "fa0b46e6-2abb-4f9d-b48d-4765449fad13",
+        "questionType": "mcq_single",
+        "difficulty": "medium",
+        "images": [],
+        "positiveMarks": 4,
+        "negativeMarks": 1,
+        "questionHtml": "A Car, moving with a speed of 50 km/h can be stopped by brakes after at least 6 m. If the same car is moving at a speed of 100 km/h. the minimum stopping distance is",
+        "passageHtml": "",
+        "instructionHtml": "",
+        "questionOptions": [
+          {
+            "key": null,
+            "textHtml": "Reynolds number and coefficients of friction",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "latent heat and gravitational potential",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "Curie and frequency of light wave",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "Planck’s constant and torque",
+            "images": [],
+            "isCorrect": true
+          }
+        ],
+        "solutionHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "enablePassage": false,
+        "enableInstruction": false,
+        "enableSolution": true,
+        "correctAnswer": true,
+        "tags": [],
         "status": "active",
-        "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-        "updatedBy": null,
+        "createdBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
+        "updatedBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
         "isdeleted": false,
-        "createdAt": "2025-12-04T05:02:10.797Z",
-        "updatedAt": "2025-12-04T05:02:10.797Z",
-        "__v": 0
+        "__v": 0,
+        "createdAt": "2026-02-06T17:01:09.511Z",
+        "updatedAt": "2026-02-06T17:01:09.511Z"
       },
-      "subject": {
-        "_id": "693115e0f1825d21120be090",
-        "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-        "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-        "subjectName": "Chemistry",
-        "description": "Chemistry",
+      {
+        "_id": "69861e554f28e874eff14c33",
+        "tenantId": "69005a54-19bc-40c1-bff2-646e4d40563b",
+        "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+        "questionId": "00933236-2864-4d5e-aca4-eaf63b181bee",
+        "questionType": "mcq_single",
+        "difficulty": "medium",
+        "images": [],
+        "positiveMarks": 4,
+        "negativeMarks": 1,
+        "questionHtml": "A block of mass M is pulled along a frictionless surface by a rope of mass m. A force P is applied at the free end of the rope. The force exert by the rope on the block is",
+        "passageHtml": "",
+        "instructionHtml": "",
+        "questionOptions": [
+          {
+            "key": null,
+            "textHtml": "12 m",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "18 m",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "24 m",
+            "images": [],
+            "isCorrect": true
+          },
+          {
+            "key": null,
+            "textHtml": "6 m",
+            "images": [],
+            "isCorrect": false
+          }
+        ],
+        "solutionHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "enablePassage": false,
+        "enableInstruction": false,
+        "enableSolution": true,
+        "correctAnswer": true,
+        "tags": [],
         "status": "active",
-        "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-        "updatedBy": null,
+        "createdBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
+        "updatedBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
         "isdeleted": false,
-        "createdAt": "2025-12-04T05:02:24.515Z",
-        "updatedAt": "2025-12-04T05:02:24.515Z",
-        "__v": 0
+        "__v": 0,
+        "createdAt": "2026-02-06T17:01:09.511Z",
+        "updatedAt": "2026-02-06T17:01:09.511Z"
       },
-      "topic": {
-        "_id": "69520ee91a14ee599111a028",
-        "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-        "classId": "693115d2f1825d21120be089",
-        "subjectId": "693115e0f1825d21120be090",
-        "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-        "topicName": "POLYMERS AND BIOMOLECULES",
-        "description": "",
+      {
+        "_id": "69861e554f28e874eff14c34",
+        "tenantId": "69005a54-19bc-40c1-bff2-646e4d40563b",
+        "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+        "questionId": "d37c7229-325c-41ef-a033-964c7af37961",
+        "questionType": "mcq_single",
+        "difficulty": "medium",
+        "images": [],
+        "positiveMarks": 4,
+        "negativeMarks": 1,
+        "questionHtml": "Three forces start acting simultaneously on a particle moving with velocity v. These forces are represented in magnitude and direction by the three sides of a triangle ABC. The particle will now move with velocity.<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "passageHtml": "",
+        "instructionHtml": "",
+        "questionOptions": [
+          {
+            "key": null,
+            "textHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": true
+          }
+        ],
+        "solutionHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "enablePassage": false,
+        "enableInstruction": false,
+        "enableSolution": true,
+        "correctAnswer": true,
+        "tags": [],
         "status": "active",
-        "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-        "updatedBy": null,
+        "createdBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
+        "updatedBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
         "isdeleted": false,
-        "createdAt": "2025-12-29T05:17:29.151Z",
-        "updatedAt": "2025-12-29T05:17:29.151Z",
-        "__v": 0
+        "__v": 0,
+        "createdAt": "2026-02-06T17:01:09.511Z",
+        "updatedAt": "2026-02-06T17:01:09.511Z"
       },
-      "subtopic": {
-        "_id": "69520ef61a14ee599111a03d",
-        "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-        "classId": "693115d2f1825d21120be089",
-        "subjectId": "693115e0f1825d21120be090",
-        "topicId": "69520ee91a14ee599111a028",
-        "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-        "subtopicName": "Carbohydrates;",
-        "description": "",
+      {
+        "_id": "69861e554f28e874eff14c35",
+        "tenantId": "69005a54-19bc-40c1-bff2-646e4d40563b",
+        "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+        "questionId": "59f8a537-52b4-479e-8850-cd31a0ff35d5",
+        "questionType": "mcq_single",
+        "difficulty": "medium",
+        "images": [],
+        "positiveMarks": 4,
+        "negativeMarks": 1,
+        "questionHtml": "A wooden block of volume V and density is released from the bottom of a tank containing water of density. As the block rises to height h, its gravitational potential energy<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "passageHtml": "",
+        "instructionHtml": "",
+        "questionOptions": [
+          {
+            "key": null,
+            "textHtml": "less than v",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "greater than v",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "in the direction of the largest force BC<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "v, remaining unchanged",
+            "images": [],
+            "isCorrect": true
+          }
+        ],
+        "solutionHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "enablePassage": false,
+        "enableInstruction": false,
+        "enableSolution": true,
+        "correctAnswer": true,
+        "tags": [],
         "status": "active",
-        "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-        "updatedBy": null,
+        "createdBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
+        "updatedBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
         "isdeleted": false,
-        "createdAt": "2025-12-29T05:17:42.828Z",
-        "updatedAt": "2025-12-29T05:17:42.828Z",
-        "__v": 0
+        "__v": 0,
+        "createdAt": "2026-02-06T17:01:09.512Z",
+        "updatedAt": "2026-02-06T17:01:09.512Z"
       },
-      "examCategory": {
-        "_id": "693fa5ab0789982afe2fcdc0",
-        "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-        "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-        "categoryName": "IITJEE\tJEEAS",
-        "description": "",
+      {
+        "_id": "69861e554f28e874eff14c36",
+        "tenantId": "69005a54-19bc-40c1-bff2-646e4d40563b",
+        "testId": "86798ea6-339f-4053-8f45-da9ddb2a242d",
+        "questionId": "5a363c2d-0d15-409b-b614-9ffba7120c86",
+        "questionType": "mcq_single",
+        "difficulty": "medium",
+        "images": [],
+        "positiveMarks": 4,
+        "negativeMarks": 1,
+        "questionHtml": "",
+        "passageHtml": "",
+        "instructionHtml": "",
+        "questionOptions": [
+          {
+            "key": null,
+            "textHtml": "increases by<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": true
+          },
+          {
+            "key": null,
+            "textHtml": "decreases by<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "increases by<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          },
+          {
+            "key": null,
+            "textHtml": "decreases by<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+            "images": [],
+            "isCorrect": false
+          }
+        ],
+        "solutionHtml": "<img src=\"\" style=\"max-width:100%;height:auto;margin:10px 0;display:block;\" />",
+        "enablePassage": false,
+        "enableInstruction": false,
+        "enableSolution": true,
+        "correctAnswer": true,
+        "tags": [],
         "status": "active",
-        "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-        "updatedBy": null,
+        "createdBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
+        "updatedBy": "70becf79-08ea-46fd-a5df-e0942b1be5c9",
         "isdeleted": false,
-        "createdAt": "2025-12-15T06:07:39.327Z",
-        "updatedAt": "2025-12-15T06:07:39.327Z",
-        "__v": 0
-      },
-      "questions": [
-        {
-          "_id": "69520f6b1a14ee599111a193",
-          "questionId": "96109",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "HIO4 oxidizes glucose to how many moles of HCOOH?",
-          "questionHtml": "\\(H I O_{4}\\) oxidizes glucose to how many moles of HCOOH?",
-          "images": [],
-          "correctAnswer": "5",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a194"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a195"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a196"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a197"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a198",
-          "questionId": "96110",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "HIO4 oxidizes glucose to how many moles of HCHO",
-          "questionHtml": "\\(H I O_{4}\\) oxidizes glucose to how many moles of HCHO",
-          "images": [],
-          "correctAnswer": "1",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a199"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a19a"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a19b"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a19c"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a19d",
-          "questionId": "96111",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "The number of anomers of glucose are",
-          "questionHtml": "The number of anomers of glucose are",
-          "images": [],
-          "correctAnswer": "2",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a19e"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a19f"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a0"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a1"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1a2",
-          "questionId": "96112",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "The no of optical isomers of fructose are",
-          "questionHtml": "The no of optical isomers of fructose are",
-          "images": [],
-          "correctAnswer": "8",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a3"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a4"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a5"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a6"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1a7",
-          "questionId": "96113",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "The number of chiral C – atoms in glucose is/are",
-          "questionHtml": "The number of chiral C – atoms in glucose is/are",
-          "images": [],
-          "correctAnswer": "4",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a8"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1a9"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1aa"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1ab"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1ac",
-          "questionId": "96114",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "How many molecules of phenyl hydrazine react with one molecule of glucose to give osazone?",
-          "questionHtml": "How many molecules of phenyl hydrazine react with one molecule of glucose to give osazone?",
-          "images": [],
-          "correctAnswer": "3",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1ad"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1ae"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1af"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b0"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1b1",
-          "questionId": "96115",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "The no of chiral C – atoms in fructose are",
-          "questionHtml": "The no of chiral C – atoms in fructose are",
-          "images": [],
-          "correctAnswer": "3",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b2"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b3"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b4"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b5"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1b6",
-          "questionId": "96116",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "integer",
-          "questionText": "The number of sp3 C – atom in glucose are",
-          "questionHtml": "The number of \\(s p^{3}\\) C – atom in glucose are",
-          "images": [],
-          "correctAnswer": "5",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b7"
-            },
-            {
-              "key": "B",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b8"
-            },
-            {
-              "key": "C",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1b9"
-            },
-            {
-              "key": "D",
-              "textHtml": "",
-              "images": [],
-              "text": "",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1ba"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1bb",
-          "questionId": "96117",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "mcq_single",
-          "questionText": "Comprehension A−→−−−−−HOH/H⊕Glucose+Fructose; B−→−−−−−HOH/H⊕Glucose+Glucose; C−→−−−−−HOH/H⊕Glucose+Galcatose. -- * -- Question :The disaccharides A is",
-          "questionHtml": "Comprehension \\(A \\overset{H O H / H^{\\oplus}}{\\rightarrow} G l u c o s e + F r u c t o s e\\) ; \\(B \\overset{H O H / H^{\\oplus}}{\\rightarrow} G l u c o s e + G l u c o s e\\) ; \\(C \\overset{H O H / H^{\\oplus}}{\\rightarrow} G l u c o s e + G a l c a t o s e\\) . -- * -- Question :The disaccharides A is",
-          "images": [],
-          "correctAnswer": "A",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "Sucrose",
-              "images": [],
-              "text": "Sucrose",
-              "isCorrect": true,
-              "_id": "69520f6b1a14ee599111a1bc"
-            },
-            {
-              "key": "B",
-              "textHtml": "Maltose",
-              "images": [],
-              "text": "Maltose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1bd"
-            },
-            {
-              "key": "C",
-              "textHtml": "Lactose",
-              "images": [],
-              "text": "Lactose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1be"
-            },
-            {
-              "key": "D",
-              "textHtml": "Galactose",
-              "images": [],
-              "text": "Galactose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1bf"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        },
-        {
-          "_id": "69520f6b1a14ee599111a1c0",
-          "questionId": "96118",
-          "classId": {
-            "_id": "693115d2f1825d21120be089",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classCode": "95a39a08-4233-4299-8019-664ba72f6fbd",
-            "className": "12th",
-            "description": "12th",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:10.797Z",
-            "updatedAt": "2025-12-04T05:02:10.797Z",
-            "__v": 0
-          },
-          "subjectId": {
-            "_id": "693115e0f1825d21120be090",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "subjectCode": "092e5818-d491-43cf-b8c6-c662e3e9f296",
-            "subjectName": "Chemistry",
-            "description": "Chemistry",
-            "status": "active",
-            "createdBy": "aeccae0f-6b7c-4c03-9b9c-0c6da661e6f9",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-04T05:02:24.515Z",
-            "updatedAt": "2025-12-04T05:02:24.515Z",
-            "__v": 0
-          },
-          "topicId": {
-            "_id": "69520ee91a14ee599111a028",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicCode": "d58c3dd3-9aa6-466f-8221-097aeb7e661d",
-            "topicName": "POLYMERS AND BIOMOLECULES",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:29.151Z",
-            "updatedAt": "2025-12-29T05:17:29.151Z",
-            "__v": 0
-          },
-          "subtopicId": {
-            "_id": "69520ef61a14ee599111a03d",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "classId": "693115d2f1825d21120be089",
-            "subjectId": "693115e0f1825d21120be090",
-            "topicId": "69520ee91a14ee599111a028",
-            "subtopicCode": "0e9513d4-77a6-4f97-bae1-0d72a3023d70",
-            "subtopicName": "Carbohydrates;",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-29T05:17:42.828Z",
-            "updatedAt": "2025-12-29T05:17:42.828Z",
-            "__v": 0
-          },
-          "examCategoryId": {
-            "_id": "693fa5ab0789982afe2fcdc0",
-            "entiId": "11dace83-33e5-4eb2-b002-c09668c6b7e3",
-            "categoryCode": "2d54a20e-5522-4424-8ef4-7c180c153365",
-            "categoryName": "IITJEE\tJEEAS",
-            "description": "",
-            "status": "active",
-            "createdBy": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "updatedBy": null,
-            "isdeleted": false,
-            "createdAt": "2025-12-15T06:07:39.327Z",
-            "updatedAt": "2025-12-15T06:07:39.327Z",
-            "__v": 0
-          },
-          "testId": "1496",
-          "difficulty": "easy",
-          "questionType": "mcq_single",
-          "questionText": "Question :The disaccharide B is",
-          "questionHtml": "Question :The disaccharide B is",
-          "images": [],
-          "correctAnswer": "B",
-          "solutionText": "",
-          "options": [
-            {
-              "key": "A",
-              "textHtml": "Sucrose",
-              "images": [],
-              "text": "Sucrose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1c1"
-            },
-            {
-              "key": "B",
-              "textHtml": "Maltose",
-              "images": [],
-              "text": "Maltose",
-              "isCorrect": true,
-              "_id": "69520f6b1a14ee599111a1c2"
-            },
-            {
-              "key": "C",
-              "textHtml": "Lactose",
-              "images": [],
-              "text": "Lactose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1c3"
-            },
-            {
-              "key": "D",
-              "textHtml": "Galactose",
-              "images": [],
-              "text": "Galactose",
-              "isCorrect": false,
-              "_id": "69520f6b1a14ee599111a1c4"
-            }
-          ],
-          "status": "active",
-          "createdBy": {
-            "_id": "69311539f1825d21120be059",
-            "userId": "25d8635f-d5df-488d-a479-fa8edad320a7",
-            "full_name": "Shanmugapriya",
-            "email": "priya@z7i.in"
-          }
-        }
-      ]
-    }
-  ]
+        "__v": 0,
+        "createdAt": "2026-02-06T17:01:09.512Z",
+        "updatedAt": "2026-02-06T17:01:09.512Z"
+      }
+    ]
+  }
 }

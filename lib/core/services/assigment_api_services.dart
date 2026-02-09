@@ -4,7 +4,7 @@ import 'api_service.dart';
 /// API Service for Circulars Module
 class AssignmentApiServices extends ApiService {
   /// Get all circulars
-  Future<List<SubjectModel>> getAssignments(String endId,String regNo) async {
+  Future<dynamic> getAssignments(String endId,String regNo) async {
     try {
       final response = await post(
         '/student/get/assnsubjects',
@@ -13,23 +13,20 @@ class AssignmentApiServices extends ApiService {
           "regNo": regNo
         },
       );
-      final List subjectsJson = response['data']['subjects'];
-      final List<SubjectModel> subjects = subjectsJson
-          .map((e) => SubjectModel.fromJson(e))
-          .toList();
-      return subjects;
+
+      return response;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<dynamic> getAssignmentTopics(String subjectName,int classNo) async {
+  Future<dynamic> getAssignmentTopics(String subjectName,int classNo,String regNo,String entId) async {
     try {
       final response = await post(
         '/student/get/assignments',
         body: {
-          "entiId":"69005a54-19bc-40c1-bff2-646e4d40563b",
-          "regNo":"9051642680002",
+          "entiId":entId,
+          "regNo":regNo,
           "subjectId" : subjectName,
           "classNo" : classNo
         },
@@ -40,13 +37,13 @@ class AssignmentApiServices extends ApiService {
     }
   }
 
-  Future<dynamic> loadQuestions(String subjectName,int classNo,String testId) async {
+  Future<dynamic> loadQuestions(String subjectName,int classNo,String testId,String regNo,String entId) async {
     try {
       final response = await post(
         '/student/download/assignments',
         body: {
-          "entiId": "69005a54-19bc-40c1-bff2-646e4d40563b",
-          "regNo": "9051642680002",
+          "entiId":entId,
+          "regNo": regNo,
           "testId": testId,
           "subjectId": subjectName,
           "classNo":classNo

@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tex/flutter_tex.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/core/theme/app_colors.dart';
-
+import '../../../core/routes/app_routes.dart';
+import '../../../data/services/sessions.dart';
 import '../controllers/test_player_controller.dart';
 import '../controllers/test_player_parser.dart';
 
@@ -10,12 +13,10 @@ import '../controllers/test_player_parser.dart';
 // TEST RESULT VIEW
 // ============================================================
 
-class TestResultView extends StatelessWidget {
+class TestResultView extends GetView<TestPlayerController> {
   const TestResultView({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<TestPlayerController>();
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
@@ -68,42 +69,42 @@ class TestResultView extends StatelessWidget {
         child: Row(
           children: [
             // Score Circle
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${percentage.toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      color: _getScoreColor(percentage),
-                    ),
-                  ),
-                  const Text(
-                    'Score',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 32),
+            // Container(
+            //   width: 100,
+            //   height: 100,
+            //   decoration: BoxDecoration(
+            //     shape: BoxShape.circle,
+            //     color: Colors.white,
+            //     boxShadow: [
+            //       BoxShadow(
+            //         color: Colors.black.withOpacity(0.1),
+            //         blurRadius: 10,
+            //       ),
+            //     ],
+            //   ),
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       Text(
+            //         '${percentage.toStringAsFixed(0)}%',
+            //         style: TextStyle(
+            //           fontSize: 28,
+            //           fontWeight: FontWeight.w900,
+            //           color: _getScoreColor(percentage),
+            //         ),
+            //       ),
+            //       const Text(
+            //         'Score',
+            //         style: TextStyle(
+            //           fontSize: 12,
+            //           color: Colors.grey,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
+            // const SizedBox(width: 32),
             // Stats
             Expanded(
               child: Row(
@@ -142,10 +143,27 @@ class TestResultView extends StatelessWidget {
             const SizedBox(width: 32),
 
             // Actions
+            // Actions
             Row(
               children: [
+                // OutlinedButton.icon(
+                //   onPressed: () => _showRetestConfirmation(controller),
+                //   icon: const Icon(Icons.refresh_rounded, size: 20),
+                //   label: const Text('Retest'),
+                //   style: OutlinedButton.styleFrom(
+                //     foregroundColor: Colors.white,
+                //     side: const BorderSide(color: Colors.white),
+                //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(12),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(width: 12),
                 OutlinedButton.icon(
-                  onPressed: () => Get.back(),
+                  onPressed: () {
+                    Get.back();
+                   },
                   icon: const Icon(Icons.close_rounded, size: 20),
                   label: const Text('Exit'),
                   style: OutlinedButton.styleFrom(
@@ -296,6 +314,7 @@ class TestResultView extends StatelessWidget {
                     bgColor = const Color(0xFF10B981);
                     icon = Icons.check_rounded;
                   } else {
+
                     bgColor = const Color(0xFFEF4444);
                     icon = Icons.close_rounded;
                   }
@@ -365,38 +384,118 @@ class TestResultView extends StatelessWidget {
         children: [
           // Question Number & Type
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Question ${question.number}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Question ${question.number}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  _getQuestionTypeName(question.type),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey,
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _getQuestionTypeName(question.type),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: OutlinedButton.icon(
+                      onPressed: () => {},
+                      icon: const Icon(Icons.flag_outlined, size: 16),
+                      label: const Text('Report'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEF4444),
+                        side: BorderSide(
+                          color: const Color(0xFFEF4444).withOpacity(0.3),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: (){
+                      controller.toggleBookmark(question.questionId);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: controller.isBookmarked(question.questionId)
+                            ? const Color(0xFFEDE9FE)
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            controller.isBookmarked(question.questionId) ? Icons.bookmark : Icons.bookmark_border,
+                            size: 16,
+                            color: controller.isBookmarked(question.questionId)
+                                ? const Color(0xFF7C3AED)
+                                : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            controller.isBookmarked(question.questionId) ? "Bookmarked" : "Bookmark",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: controller.isBookmarked(question.questionId)
+                                  ? const Color(0xFF7C3AED)
+                                  : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+
+              // IconButton(
+              //   icon: Icon(
+              //     controller.isBookmarked(question.questionId)
+              //         ? Icons.bookmark
+              //         : Icons.bookmark_border,
+              //     color: controller.isBookmarked(question.questionId)
+              //         ? const Color(0xFF4F46E5)
+              //         : Colors.grey,
+              //   ),
+              //   onPressed: () => controller.toggleBookmark(question.questionId),
+              // ),
             ],
           ),
           const SizedBox(height: 24),
@@ -460,7 +559,7 @@ class TestResultView extends StatelessWidget {
   Widget _buildMCQSingleReview(
       Question question,
       TestPlayerController controller,
-      ) {print("Ques ${question.questionHtml }");
+      ) {
     return TeXView(
       key: UniqueKey(),
       style: const TeXViewStyle(
@@ -469,15 +568,12 @@ class TestResultView extends StatelessWidget {
       ),
       child: TeXViewColumn(
         children: [
-          // ================= QUESTION =================
           TeXViewDocument(
             question.questionHtml ?? question.text,
             style: TeXViewStyle.fromCSS(
               'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;',
             ),
           ),
-
-          // ================= OPTIONS =================
           ...question.options.asMap().entries.map((entry) {
             final index = entry.key;
             final option = entry.value;
@@ -485,7 +581,6 @@ class TestResultView extends StatelessWidget {
             final isSelected = question.selectedAnswer == label;
             final isCorrect = controller.isOptionCorrect(question, label);
             final isUserWrong = isSelected && !isCorrect;
-
             // -------- Styling --------
             String border;
             String background;
@@ -669,6 +764,7 @@ class TestResultView extends StatelessWidget {
         final question = controller.currentReviewQuestion;
         final isCorrect = controller.isQuestionCorrect(question);
         final stats = controller.getTestStatistics();
+        final percentage = stats['percentage'] as double;
 
         return Column(
           children: [
@@ -715,28 +811,7 @@ class TestResultView extends StatelessWidget {
                   children: [
                     _buildSummaryItem('Question Type', _getQuestionTypeName(question.type)),
                     _buildSummaryItem('Question Number', '${question.number}'),
-                    _buildSummaryItem('Difficulty', 'Medium'),
-
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 24),
-
-                    // const Text(
-                    //   'Your Performance',
-                    //   style: TextStyle(
-                    //     fontSize: 16,
-                    //     fontWeight: FontWeight.w700,
-                    //     color: AppColors.textPrimary,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
-                    //
-                    // _buildPerformanceBar('Correct', stats['correct'], const Color(0xFF10B981)),
-                    // _buildPerformanceBar('Wrong', stats['wrong'], const Color(0xFFEF4444)),
-                    // _buildPerformanceBar('Skipped', stats['skipped'], const Color(0xFF6B7280)),
-
-                    // const SizedBox(height: 24),
-
+                    // _buildSummaryItem('Difficulty', 'Medium'),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -763,6 +838,34 @@ class TestResultView extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 24),
+
+                    // const Text(
+                    //   'Your Performance',
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w700,
+                    //     color: AppColors.textPrimary,
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
+                    //
+                    // _buildPerformanceBar('Correct', stats['correct'], const Color(0xFF10B981)),
+                    // _buildPerformanceBar('Wrong', stats['wrong'], const Color(0xFFEF4444)),
+                    // _buildPerformanceBar('Skipped', stats['skipped'], const Color(0xFF6B7280)),
+
+                    // const SizedBox(height: 24),
+                    Center(
+                      child: _buildDonutChart(
+                        percentage: percentage,
+                        correct: stats['correct'] as int,
+                        wrong: (stats['wrong'] as int) + stats['skipped'] as int,
+                        skipped: 0,
                       ),
                     ),
                   ],
@@ -905,5 +1008,198 @@ class TestResultView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildDonutChart({
+    required double percentage,
+    required int correct,
+    required int wrong,
+    required int skipped,
+  }) {
+    return SizedBox(
+      width: 180,
+      height: 180,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Donut Chart
+          CustomPaint(
+            size: const Size(200, 200),
+            painter: DonutChartPainter(
+              correct: correct,
+              wrong: wrong,
+              skipped: skipped,
+            ),
+          ),
+
+          // Center Content
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${percentage.toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: _getScoreColor(percentage),
+                  ),
+                ),
+                const Text(
+                  'Score',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRetestConfirmation(TestPlayerController controller) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.refresh_rounded, color: Color(0xFF8B5CF6)),
+            SizedBox(width: 12),
+            Text('Retest?'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to retake this test? All your current answers will be cleared and the timer will restart.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Get.until((route) => route.settings.name == AppRoutes.assignmentInstructions);
+              Get.toNamed(AppRoutes.assignmentInstructions);
+              Session.instance.isRetest = true;
+              // controller.takeRetest();
+            },
+            icon: const Icon(Icons.restart_alt_rounded, size: 18),
+            label: const Text('Restart Test'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DonutChartPainter extends CustomPainter {
+  final int correct;
+  final int wrong;
+  final int skipped;
+
+  DonutChartPainter({
+    required this.correct,
+    required this.wrong,
+    required this.skipped,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final strokeWidth = 35.0;
+
+    final total = correct + wrong + skipped;
+    if (total == 0) return;
+
+    // Calculate angles
+    final correctAngle = (correct / total) * 2 * math.pi;
+    final wrongAngle = (wrong / total) * 2 * math.pi;
+    final skippedAngle = (skipped / total) * 2 * math.pi;
+
+    // Paint for each segment
+    final correctPaint = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final wrongPaint = Paint()
+      ..color = const Color(0xFFEF4444)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final skippedPaint = Paint()
+      ..color = const Color(0xFF6B7280)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
+
+    // Starting angle (top of circle)
+    var startAngle = -math.pi / 2;
+
+    // Draw correct segment
+    if (correct > 0) {
+      canvas.drawArc(
+        rect,
+        startAngle,
+        correctAngle,
+        false,
+        correctPaint,
+      );
+      startAngle += correctAngle;
+    }
+
+    // Draw wrong segment
+    if (wrong > 0) {
+      canvas.drawArc(
+        rect,
+        startAngle,
+        wrongAngle,
+        false,
+        wrongPaint,
+      );
+      startAngle += wrongAngle;
+    }
+
+    // Draw skipped segment
+    if (skipped > 0) {
+      canvas.drawArc(
+        rect,
+        startAngle,
+        skippedAngle,
+        false,
+        skippedPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(DonutChartPainter oldDelegate) {
+    return oldDelegate.correct != correct ||
+        oldDelegate.wrong != wrong ||
+        oldDelegate.skipped != skipped;
   }
 }

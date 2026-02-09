@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
 import 'package:suguna_assignment_app/core/resources/app_strings.dart';
@@ -5,6 +6,10 @@ import 'package:suguna_assignment_app/core/services/api_service.dart';
 import 'package:suguna_assignment_app/core/services/assigment_api_services.dart';
 import 'package:suguna_assignment_app/core/services/service_locator.dart';
 import 'package:suguna_assignment_app/data/models/subject_model.dart';
+import 'package:suguna_assignment_app/data/services/network_service.dart';
+import 'package:suguna_assignment_app/data/services/sessions.dart';
+
+import '../../../data/services/store_service.dart';
 
 class HomeAssignmentsController extends GetxController {
   // ===============================
@@ -32,6 +37,9 @@ class HomeAssignmentsController extends GetxController {
   late final Map<String, dynamic> loginResponse;
   late final Map<String, dynamic> studentData;
 
+
+  final storage = Get.find<StorageService>();
+
   // ===============================
   // LIFECYCLE
   // ===============================
@@ -40,7 +48,7 @@ class HomeAssignmentsController extends GetxController {
     super.onInit();
 
     // Read arguments from login navigation
-    loginResponse = Get.arguments as Map<String, dynamic>;
+    loginResponse = storage.getUser() ?? {};
     studentData = loginResponse['data'];
 
     _initStudentContext();
@@ -52,8 +60,7 @@ class HomeAssignmentsController extends GetxController {
   // ===============================
   void _initStudentContext() {
     // Academic year
-    selectedAcademicYear.value =
-        studentData['currentAcademicYear'] ?? '';
+    selectedAcademicYear.value = studentData['currentAcademicYear'] ?? '';
 
     // Class
     final int classNo = studentData['classNo'];
@@ -70,20 +77,66 @@ class HomeAssignmentsController extends GetxController {
     );
   }
 
-  // ===============================
-  // LOAD SUBJECTS
-  // ===============================
+
   Future<void> loadSubjects() async {
     isLoading.value = true;
 
     try {
-      final String classNo = studentData['tenantId'];
-      final String academicYear = studentData['admissionNo'];
-      final response = await _apiService.getAssignments(classNo,academicYear);
-      subjects.assignAll(response);
+      final hasInternet = await NetworkService.hasInternet();
+      final String classNo = studentData['tenantId']?.toString() ?? '';
+      final String academicYear =
+          studentData['admissionNo']?.toString() ?? '';
 
-      if (subjects.isNotEmpty) {
-        selectedSubject.value = subjects.first;
+      if (hasInternet) {
+        // ================= ONLINE =================
+        final response =
+        await _apiService.getAssignments(classNo, academicYear);
+
+        if (response['status'] == true) {
+          final subjectsJson =
+          response['data']['subjects'] as List;
+
+          // Save full API response locally
+          storage.saveSubjects(response);
+
+          subjects.assignAll(
+            subjectsJson
+                .map((e) => SubjectModel.fromJson(e))
+                .toList(),
+          );
+
+          if (subjects.isNotEmpty) {
+            selectedSubject.value = subjects.first;
+          }
+        }
+      } else {
+        // ================= OFFLINE =================
+        final localData = storage.getSubjects();
+
+        if (localData != null) {
+          final subjectsJson =
+          localData['data']['subjects'] as List;
+
+          subjects.assignAll(
+            subjectsJson
+                .map((e) => SubjectModel.fromJson(e))
+                .toList(),
+          );
+
+          if (subjects.isNotEmpty) {
+            selectedSubject.value = subjects.first;
+          }
+          //
+          // Get.snackbar(
+          //   "Offline Mode",
+          //   "Loaded subjects from local storage",
+          // );
+        } else {
+          Get.snackbar(
+            "No Internet",
+            "No cached data available",
+          );
+        }
       }
     } on ApiException catch (e) {
       Get.snackbar(AppStrings.error, e.message);
@@ -111,9 +164,16 @@ class HomeAssignmentsController extends GetxController {
   // SUBJECT CLICK
   // ===============================
   void onSubjectTap(SubjectModel subject) {
+    Session.instance.selectedSubject = subject;
     Get.toNamed(
       AppRoutes.topicAssignments,
       arguments: subject,
     );
   }
+
+  Future<bool> hasInternet() async {
+    final result = await Connectivity().checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+
 }
