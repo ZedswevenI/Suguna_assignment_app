@@ -908,33 +908,37 @@ class TestPlayerController extends GetxController {
           colorText: Colors.white,
           duration: const Duration(seconds: 3),
         );
-        return;
-      }
-      if (response['status']) {
-        Get.until((route) => route.settings.name == AppRoutes.home);
-        Get.snackbar(
-          'Success',
-          'Test results submitted successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        storage.removeByKey(currentTestId);
       } else {
-        Get.snackbar(
-          'Error',
-          response['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
+        if (response['status']) {
+          Get.snackbar(
+            'Success',
+            'Test results submitted successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFF10B981),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+          await Future.delayed(Duration(milliseconds: 500));
+          Get.until((route) => route.settings.name == AppRoutes.home);
+          storage.removeByKey(Session.instance.currentTestId);
+        } else {
+          Get.snackbar(
+            'Error',
+            response['message'],
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+        }
+        Get.back();
       }
-      Get.back();
+
+
       // Navigate back or to results page
       // Get.back();
-    } catch (e) {
+    } catch (e,s) {
+      print("Came to e ${e} ${s}");
       Get.snackbar(
         'Error',
         'Failed to submit results. Please try again.',

@@ -405,7 +405,6 @@ class TopicAssignmentsController extends GetxController {
     String subCate,
      String category,
   ) async {
-    print("Can down ${canDownload}");
     if (!canDownload) {
       final int classNo = loginResponse['classNo'];
       final String academicYear = loginResponse['admissionNo'];
