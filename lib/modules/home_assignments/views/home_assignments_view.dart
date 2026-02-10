@@ -9,43 +9,38 @@ import 'package:suguna_assignment_app/modules/home_assignments/controllers/home_
 
 class HomeAssignmentsView extends GetView<HomeAssignmentsController> {
   const HomeAssignmentsView({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // selectedRoute: AppRoutes.home,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (ResponsiveHelper.isTablet(context)) {
-              return _buildTabletLayout(context);
-            } else {
-              return _buildMobileLayout(context);
-            }
-          },
-        ),
+    // return AppLayout(child: , selectedRoute: selectedRoute)
+    return AppLayout(
+      subjectName: "Assignments",
+      selectedRoute: AppRoutes.home,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (ResponsiveHelper.isTablet(context)) {
+            return _buildTabletLayout(context);
+          } else {
+            return _buildMobileLayout(context);
+          }
+        },
       ),
     );
   }
 
   Widget _buildTabletLayout(BuildContext context) {
     return Container(
-      color: const Color(0xFFF4F6F8), // 🌫 Soft background
+      margin: EdgeInsets.only(top: 32),
+      color:  Colors.white, // 🌫 Soft background
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              spacing: 12,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Assignments",style: TextStyle(color: Colors.black,fontSize: 22,fontWeight: FontWeight.w600),),
-                _buildContextCard(),
-                _buildTabsCard(),
-                Expanded(child: _buildAssignmentsGrid()),
-              ],
-            ),
+          child: Column(
+            spacing: 12,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildContextCard(),
+              Expanded(child: _buildAssignmentsGrid()),
+            ],
           ),
         ),
       ),
@@ -159,34 +154,15 @@ class HomeAssignmentsView extends GetView<HomeAssignmentsController> {
     );
   }
 
-  Widget _buildTabsCard() {
-    return Container();
-    // return Container(
-    //   decoration: _surfaceDecoration(),
-    //   child: TabBar(
-    //     controller: controller.tabController,
-    //     indicatorColor: AppColors.primary,
-    //     labelColor: AppColors.primary,
-    //     unselectedLabelColor: AppColors.textSecondary,
-    //     labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-    //     tabs: const [
-    //       Tab(text: 'Assignments'),
-    //       Tab(text: 'Completed'),
-    //       Tab(text: 'Overdue'),
-    //     ],
-    //   ),
-    // );
-  }
 
   Widget _buildAssignmentsGrid() {
     return Obx(() {
       if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
-
       return Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFEFF2F5), // 🌫 subtle grid background
+          color: Colors.white, // 🌫 subtle grid background
           borderRadius: BorderRadius.circular(14),
         ),
         child: GridView.builder(
@@ -207,52 +183,77 @@ class HomeAssignmentsView extends GetView<HomeAssignmentsController> {
   }
 
   Widget _buildSubjectCard(subject) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF7EEFA),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          // Subject Name
-          Expanded(
-            child: Text(
-              subject.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+    return GestureDetector(
+      onTap: () => controller.onSubjectTap(subject),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFFF3F4FF),
+              const Color(0xFFEDE9FE),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Subject Initial Badge
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  subject.name[0],
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 12),
+            const SizedBox(width: 16),
 
-          // Continue Button
-          TextButton(
-            onPressed: () => controller.onSubjectTap(subject),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            // Subject Name
+            Expanded(
+              child: Text(
+                subject.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
-            child: const Text(
-              'Continue',
-              style: TextStyle(fontWeight: FontWeight.w600,fontSize: 20),
+
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+              color: AppColors.primary,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
 
 
   BoxDecoration _surfaceDecoration() {

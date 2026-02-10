@@ -13,16 +13,14 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: AppLayout(
-        selectedRoute: AppRoutes.topicAssignments,
-        subjectName: controller.subject.name,
-        classInfo: controller.subject.classInfo,
-        assignmentLabel: 'Assignment',
-        showSidebar: false,
-        showBackButton: true,
-        child: _buildModernLayout(context),
-      ),
+    return AppLayout(
+      selectedRoute: AppRoutes.topicAssignments,
+      subjectName: controller.subject.name,
+      classInfo: controller.subject.classInfo,
+      assignmentLabel: 'Assignment',
+      showSidebar: false,
+      showBackButton: true,
+      child: _buildModernLayout(context),
     );
   }
 
@@ -33,6 +31,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
       }
       return Container(
         decoration: BoxDecoration(
+          color: Colors.white,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -175,7 +174,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () => controller.selectTopic(topic.id),
+                    onTap: () => controller.selectTopic(topic.id,topic),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -492,17 +491,17 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
               children: [
                 ...categorySubcategories.entries.map((categoryEntry) {
                   final category = categoryEntry.key;
-                  final subcategories = categoryEntry.value;
+                  final subcategoriesMap = subtopic.scores[category] ?? {}; // ✅ Get the actual map
+
                   return Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: subcategories.map((subcategory) {
-                        final assignments = subtopic.scores[category]?[subcategory] ?? [];
+                      children: subcategoriesMap.entries.map((subcategoryEntry) { // ✅ Use .entries
+                        final subcategory = subcategoryEntry.key;
+                        final assignments = subcategoryEntry.value;
                         return Expanded(
                           child: Column(
-                            // ✅ CENTER CIRCLES VERTICALLY
                             mainAxisAlignment: MainAxisAlignment.end,
-                            // ✅ CENTER CIRCLES HORIZONTALLY
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: assignments.isEmpty
@@ -510,44 +509,38 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
                                 : assignments.map((assignment) {
                               return assignment.testId == ''
                                   ? Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 8),
+                                padding: const EdgeInsets.only(bottom: 8),
                                 child: _buildEmptyDot(),
                               )
                                   : Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 8),
+                                padding: const EdgeInsets.only(bottom: 8),
                                 child: ModernAssignmentDot(
                                   state: controller.getCircleState(
                                     subtopic.id,
                                     category,
                                     assignment.testId,
                                   ),
-                                  selected: controller
-                                      .isSubtopicSelected(
+                                  selected: controller.isSubtopicSelected(
                                     subtopic.id,
                                     category,
                                     assignment.testId,
                                   ),
-                                  onTap: () =>
-                                      controller.onCircleTap(
-                                        subtopic.id,
-                                        category,
-                                        assignment.testId,
-                                        assignment.status == "ASSIGNED",
-                                        subtopic,
-                                          subcategory
-                                      ),
-                                  status:
-                                  controller
-                                      .getAssignmentStatus(
+                                  onTap: () => controller.onCircleTap(
+                                      subtopic.id,
+                                      category,
+                                      assignment.testId,
+                                      assignment.status == "ASSIGNED",
+                                      subtopic,
+                                      subcategory,
+                                    category,
+                                  ),
+                                  status: controller.getAssignmentStatus(
                                     subtopic.id,
                                     category,
                                     assignment.testId,
                                     assignment.status,
                                   ),
-                                  scoreLevel:
-                                  controller.getScoreLevel(
+                                  scoreLevel: controller.getScoreLevel(
                                     assignment.cgpa,
                                     assignment.status,
                                   ),
@@ -799,10 +792,9 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
             borderColor = const Color(0xFFD1D5DB);
         }
       } else {
-        // Show status-based color
         switch (widget.status ?? AssignmentStatus.notOpened) {
           case AssignmentStatus.notOpened:
-            color = const Color(0xFF1F2937); // Black
+            color = const Color(0xFF7C8798);
             borderColor = const Color(0xFF374151);
             break;
           case AssignmentStatus.available:

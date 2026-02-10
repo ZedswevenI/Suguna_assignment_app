@@ -26,12 +26,14 @@ class TopicModel {
 class SubtopicModel {
   final String id;
   final String name;
+  final List<AssignmentScore> orderedAssignments;
 
   /// Category -> SubCategory -> Assignments
   final Map<String, Map<String, List<AssignmentScore>>> scores;
 
   SubtopicModel({
     required this.id,
+    required this.orderedAssignments,
     required this.name,
     required this.scores,
   });
@@ -60,5 +62,17 @@ class AssignmentScore {
     required this.status,
     required this.isEnabled,
     this.cgpa
+  });
+}
+
+class TempAssignment {
+  final String category;
+  final String subCategory;
+  final AssignmentScore assignment;
+
+  TempAssignment({
+    required this.category,
+    required this.subCategory,
+    required this.assignment,
   });
 }

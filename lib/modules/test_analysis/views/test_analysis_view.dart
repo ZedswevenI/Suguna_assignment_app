@@ -100,52 +100,55 @@ class TestAnalysisView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      _showRetestConfirmation(controller);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFD84040),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  if(!Session.instance.isCompletedAssignment)...[
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        _showRetestConfirmation(controller);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFFD84040),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Reattempt',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      _showFinalizeConfirmation(controller);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFD84040),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Finalize',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      child: const Text(
+                        'Reattempt',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        _showFinalizeConfirmation(controller);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFFD84040),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Finalize',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ]
+
                 ],
               ),
             ],
@@ -487,7 +490,7 @@ class TestAnalysisView extends StatelessWidget {
               _buildHeaderRow(),
               // SUBJECT ROW
               _buildPerformanceRow(
-                'MATHEMATICS',
+                Session.instance.selectedSubject?.name ?? '',
                 totalScore.toStringAsFixed(1),
                 correct.toString(),
                 '+${positiveMarks.toStringAsFixed(1)}',
@@ -1041,8 +1044,7 @@ class TestAnalysisView extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: () {
-              Get.until((route) => route.settings.name == AppRoutes.home);
-              controller.submitTest();
+              controller.submitTestResults();
               // controller.takeRetest();
             },
             icon: const Icon(Icons.restart_alt_rounded, size: 18),

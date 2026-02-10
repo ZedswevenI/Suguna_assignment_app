@@ -55,6 +55,22 @@ class AssignmentApiServices extends ApiService {
     }
   }
 
+  Future<dynamic> getAnswers(String batchId,String testId,String regNo,String entId) async {
+    try {
+      final response = await post(
+        '/assignment/result/list/student?testId=$testId',
+        body: {
+          "entiId":entId,
+          "admissionNo": regNo,
+          "batchId": batchId,
+          'testId': testId
+        },
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
 
 
   /// Mark circular as read
@@ -70,12 +86,15 @@ class AssignmentApiServices extends ApiService {
   }
 
   /// Get circular read status
-  Future<Map<String, dynamic>> getReadStatus(String circularId) async {
+  Future<dynamic> submitResult(dynamic body) async {
     try {
-      final response = await get('/circulars/$circularId/read-status');
+      final response = await post(
+        '/assignment/result/submit',
+        body: body,
+      );
       return response;
     } catch (e) {
-      rethrow;
+      return e;
     }
   }
 }

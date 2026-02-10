@@ -16,26 +16,29 @@ class TestPlayerView extends StatelessWidget {
     return GetBuilder<TestPlayerController>(
       id: 'palette',
       builder: (controller) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFF5F7FA),
-          body: SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(controller),
-                Obx(() {
-                  return Expanded(
-                    child: AbsorbPointer(
-                      absorbing: controller.isTimerCompleted,
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildQuestionPanel(controller)),
-                          _buildQuestionPalette(controller),
-                        ],
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            backgroundColor: const Color(0xFFF5F7FA),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(controller),
+                  Obx(() {
+                    return Expanded(
+                      child: AbsorbPointer(
+                        absorbing: controller.isTimerCompleted,
+                        child: Row(
+                          children: [
+                            Expanded(child: _buildQuestionPanel(controller)),
+                            _buildQuestionPalette(controller),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         );
@@ -986,6 +989,7 @@ class TestPlayerView extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: () {
+              controller.clearData();
               Get.offAllNamed(AppRoutes.home);
             },
             icon: const Icon(Icons.restart_alt_rounded, size: 18),

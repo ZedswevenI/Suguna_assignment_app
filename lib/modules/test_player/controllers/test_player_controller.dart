@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -6,7 +5,11 @@ import 'package:get/get.dart';
 import 'package:suguna_assignment_app/data/services/sessions.dart';
 import 'package:suguna_assignment_app/modules/test_analysis/views/test_analysis_view.dart';
 import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_parser.dart';
+import '../../../core/routes/app_routes.dart';
+import '../../../core/services/assigment_api_services.dart';
+import '../../../core/services/service_locator.dart';
 import '../../../data/models/subject_model.dart';
+import '../../../data/services/network_service.dart';
 import '../../../data/services/store_service.dart';
 import '../../topic_assignments/controllers/topic_assignments_controller.dart';
 import '../views/test_review_view.dart';
@@ -14,7 +17,9 @@ import '../views/test_review_view.dart';
 class TestPlayerController extends GetxController {
   final TextEditingController numericalController = TextEditingController();
   final Rx<SubjectModel?> selectedSubject = Rx<SubjectModel?>(null);
+
   void updateView() => update(['palette']);
+
   void updateNewView() => update(['new']);
 
   final textSize = 1.obs;
@@ -25,7 +30,13 @@ class TestPlayerController extends GetxController {
   late String currentTestId;
   final bookmarkedQuestions = <String>{}.obs;
 
-  Map<String,dynamic> selectedQuestions = {};
+  Map<String, dynamic> selectedQuestions = {};
+
+  static TestPlayerController get to => Get.find();
+  final _apiService = ServiceLocator.get<AssignmentApiServices>();
+
+  DateTime startedAt = DateTime.now();
+  int totalReAttempts = 1;
 
   @override
   void onInit() {
@@ -33,22 +44,35 @@ class TestPlayerController extends GetxController {
     // Load actual API data
     initData();
   }
+
   Future<void> initData() async {
     // final args = Get.arguments;
+    currentQuestionIndex.value = 0;
     if (Session.instance.storedData != null) {
-      if(!Session.instance.isRetest) {
-        currentTestId = Session.instance.storedData!['testId'];
+      if (!Session.instance.isRetest) {
+        currentTestId = Session.instance.currentTestId;
         final stored = Session.instance.storedData!['storedData'];
+        totalReAttempts = Session.instance.storedData!['storedData']['numberOfReattempts'] ?? 1;
         categories = await TestApiParser.parseFromJsonString(
           stored['testJson'],
         );
         selectedQuestions = stored['testJson'];
-        correctAnswersMap = Map<String, dynamic>.from(stored['result']);
+        // correctAnswersMap = Map<String, dynamic>.from(stored['result']);
+        final List answers = stored['result']['answers'] ?? [];
+        for (var item in answers) {
+          final questionNumber = item['questionNumber'];
+          final correctAnswer = item['correctAnswer'];
+
+          if (questionNumber != null && correctAnswer != null) {
+            correctAnswersMap['question_$questionNumber'] = correctAnswer;
+          }
+        }
         _restoreUserAnswers(stored['result']['answers']);
         _loadBookmarks();
         updateNewView();
       } else {
         takeRetest();
+        startedAt = DateTime.now();
       }
     } else {
       startTestAgain();
@@ -59,33 +83,29 @@ class TestPlayerController extends GetxController {
     final allQuestions = getAllQuestions();
     for (var saved in savedAnswers) {
       final number = saved['questionNumber'];
-      final question =
-      allQuestions.firstWhere((q) => q.number == number);
-
+      final question = allQuestions.firstWhere((q) => q.number == number);
       final userAnswer = saved['userAnswer'];
-
       switch (question.type) {
         case QuestionType.mcqSingle:
         case QuestionType.trueFalse:
         case QuestionType.singleDropdown:
-          question.selectedAnswer =
-          userAnswer.isNotEmpty ? userAnswer : null;
+          question.selectedAnswer = userAnswer != null && userAnswer.isNotEmpty ? userAnswer : null;
           break;
 
         case QuestionType.mcqMultiple:
         case QuestionType.multiDropdown:
-          question.selectedAnswers =
-          userAnswer.isNotEmpty ? userAnswer.split(';') : [];
+          question.selectedAnswers =  userAnswer != null && userAnswer.isNotEmpty
+              ? userAnswer.split(';')
+              : [];
           break;
 
         case QuestionType.numerical:
-          question.numericalAnswer =
-              double.tryParse(userAnswer);
+          question.numericalAnswer =  userAnswer != null ? double.tryParse(userAnswer) : null;
           break;
 
         case QuestionType.textType:
         case QuestionType.subjective:
-          question.textAnswer = userAnswer;
+          question.textAnswer = userAnswer ?? '';
           break;
 
         case QuestionType.matchTheFollowing:
@@ -103,31 +123,35 @@ class TestPlayerController extends GetxController {
   }
 
   void startTestAgain() {
-    final args = Get.arguments;
+    startedAt = DateTime.now();
+    final stored = storage.read(Session.instance.currentTestId);
+    totalReAttempts = stored == null || stored['numberOfReattempts'] == null ? 1 :  stored['numberOfReattempts'] + 1;
+    // final args = Get.arguments;
     try {
-      currentTestId = args['testId'];
-      selectedQuestions = TopicAssignmentsController.to.selectedQuestions  ?? {};
+      // currentTestId = args['testId'];
+      selectedQuestions = TopicAssignmentsController.to.selectedQuestions ?? {};
       loadTestData(_getApiResponse());
       _startTimer();
-    } catch (e){
-      selectedQuestions = TopicAssignmentsController.to.selectedQuestions  ?? {};
+    } catch (e) {
+      selectedQuestions = TopicAssignmentsController.to.selectedQuestions ?? {};
       loadTestData(_getApiResponse());
       _startTimer();
     }
   }
 
-
-   void takeRetest() async {
-     isLoading = true;
-     updateView();
-     categories.clear();
-     currentTestId = Session.instance.storedData!['testId'];
-     selectedQuestions = Session.instance.storedData!['storedData']['testJson'];
-     final Map<String, dynamic> jsonData = selectedQuestions;
-     categories.addAll(await TestApiParser.parseFromJsonString(jsonData));
-     isLoading = false;
-     _startTimer();
-     updateView();
+  void takeRetest() async {
+    isLoading = true;
+    updateView();
+    categories.clear();
+    currentTestId = Session.instance.currentTestId;
+    selectedQuestions = Session.instance.storedData!['storedData']['testJson'];
+    final stored = storage.read(currentTestId);
+    totalReAttempts = stored == null || stored['numberOfReattempts'] == null ? 1 :  stored['numberOfReattempts'] + 1;
+    final Map<String, dynamic> jsonData = selectedQuestions;
+    categories.addAll(await TestApiParser.parseFromJsonString(jsonData));
+    isLoading = false;
+    _startTimer();
+    updateView();
   }
 
   // Method to load test data from API
@@ -135,17 +159,15 @@ class TestPlayerController extends GetxController {
     isLoading = true;
     updateView();
     categories.clear();
-    final Map<String, dynamic> jsonData = TopicAssignmentsController.to.selectedQuestions ?? {};
+    final Map<String, dynamic> jsonData =
+        TopicAssignmentsController.to.selectedQuestions ?? {};
     categories.addAll(await TestApiParser.parseFromJsonString(jsonData));
     isLoading = false;
     updateView();
   }
 
-
-
   // Actual API response from your server
   String _getApiResponse() {
-
     return '''
     
     ''';
@@ -179,7 +201,6 @@ class TestPlayerController extends GetxController {
     updateView();
   }
 
-
   void setTextAnswer(String text) {
     currentQuestion.textAnswer = text;
     if (currentQuestion.status == QuestionStatus.notVisited) {
@@ -187,6 +208,7 @@ class TestPlayerController extends GetxController {
     }
     updateView();
   }
+
 
   void selectMatch(String left, String right) {
     currentQuestion.matchAnswers ??= {};
@@ -224,7 +246,6 @@ class TestPlayerController extends GetxController {
       default:
         return 16.0;
     }
-
   }
 
   double getOptionFontSize() {
@@ -240,9 +261,11 @@ class TestPlayerController extends GetxController {
     }
   }
 
+  QuestionCategory get currentCategory =>
+      categories[currentCategoryIndex.value];
 
-  QuestionCategory get currentCategory => categories[currentCategoryIndex.value];
-  Question get currentQuestion => currentCategory.questions[currentQuestionIndex.value];
+  Question get currentQuestion =>
+      currentCategory.questions[currentQuestionIndex.value];
 
   void selectCategory(int index) {
     currentCategoryIndex.value = index;
@@ -280,15 +303,14 @@ class TestPlayerController extends GetxController {
       case QuestionType.multiDropdown:
         isAnswered =
             question.selectedAnswers != null &&
-                question.selectedAnswers!.isNotEmpty;
+            question.selectedAnswers!.isNotEmpty;
         break;
 
       case QuestionType.matchTheFollowing:
         isAnswered =
             question.matchAnswers != null &&
-                question.matchAnswers!.isNotEmpty &&
-                question.matchAnswers!.length ==
-                    question.matchPairs?.length;
+            question.matchAnswers!.isNotEmpty &&
+            question.matchAnswers!.length == question.matchPairs?.length;
         break;
 
       case QuestionType.numerical:
@@ -299,12 +321,13 @@ class TestPlayerController extends GetxController {
       case QuestionType.subjective:
         isAnswered =
             question.textAnswer != null &&
-                question.textAnswer!.trim().isNotEmpty;
+            question.textAnswer!.trim().isNotEmpty;
         break;
     }
 
-    question.status =
-    isAnswered ? QuestionStatus.answered : QuestionStatus.notAnswered;
+    question.status = isAnswered
+        ? QuestionStatus.answered
+        : QuestionStatus.notAnswered;
 
     _goToNextQuestion();
   }
@@ -316,12 +339,12 @@ class TestPlayerController extends GetxController {
     question.matchAnswers = null;
     question.numericalAnswer = null;
     question.textAnswer = null;
-    numericalController.clear();  // 👈 clears UI instantly
+    numericalController.clear(); // 👈 clears UI instantly
 
     if (question.status == QuestionStatus.answeredAndMarked) {
       question.status = QuestionStatus.markedForReview;
     }
-   updateView();
+    updateView();
   }
 
   void saveAndMarkForReview() {
@@ -343,6 +366,7 @@ class TestPlayerController extends GetxController {
   }
 
   void previous() {
+    _syncNumericalField();
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
     } else if (currentCategoryIndex.value > 0) {
@@ -368,8 +392,13 @@ class TestPlayerController extends GetxController {
     final question = currentQuestion;
     if (question.type == QuestionType.numerical) {
       if (question.numericalAnswer != null) {
-        numericalController.text =
-            question.numericalAnswer.toString();
+        numericalController.text = question.numericalAnswer.toString();
+      } else {
+        numericalController.clear();
+      }
+    } else if (question.type == QuestionType.textType) {
+      if (question.textAnswer != null) {
+        numericalController.text = question.textAnswer.toString();
       } else {
         numericalController.clear();
       }
@@ -382,35 +411,34 @@ class TestPlayerController extends GetxController {
     final category = categories[categoryIndex];
     final stats = <QuestionStatus, int>{};
     for (var status in QuestionStatus.values) {
-      stats[status] = category.questions.where((q) => q.status == status).length;
+      stats[status] = category.questions
+          .where((q) => q.status == status)
+          .length;
     }
     return stats;
   }
 
   bool isLatex(String text) {
     final latexPatterns = [
-      r'\$.*?\$',              // $...$
-      r'\\\(',                 // \(
-      r'\\\)',                 // \)
-      r'\\frac',               // \frac
-      r'\\sqrt',               // \sqrt
+      r'\$.*?\$', // $...$
+      r'\\\(', // \(
+      r'\\\)', // \)
+      r'\\frac', // \frac
+      r'\\sqrt', // \sqrt
       r'\\alpha|\\beta|\\gamma|\\delta|\\Delta',
-      r'\^',                   // superscript
-      r'_',                    // subscript
-      r'\\begin\{.*?\}',       // environments
+      r'\^', // superscript
+      r'_', // subscript
+      r'\\begin\{.*?\}', // environments
       r'\\end\{.*?\}',
     ];
 
-    return latexPatterns.any(
-          (pattern) => RegExp(pattern).hasMatch(text),
-    );
+    return latexPatterns.any((pattern) => RegExp(pattern).hasMatch(text));
   }
 
-
   //Timers
-  static const int totalDurationSeconds = 30 * 60; // 45 minutes
-  static const int warningThresholdSeconds = 5 * 60; // 5 minutes
-  static const int blinkThresholdSeconds = 60; // last 1 minute
+  static const int totalDurationSeconds = 30 * 60;
+  static const int warningThresholdSeconds = 5 * 60;
+  static const int blinkThresholdSeconds = 60;
 
   final enableBlinkingTimer = true; // 🔥 ONE BOOLEAN (toggle anytime)
   final blinkOn = true.obs;
@@ -420,7 +448,6 @@ class TestPlayerController extends GetxController {
   final showFiveMinWarning = false.obs;
 
   Timer? _timer;
-
 
   @override
   void onClose() {
@@ -465,7 +492,6 @@ class TestPlayerController extends GetxController {
     blinkOn.value = true;
   }
 
-
   void _onTimeUp() {
     Get.snackbar(
       'Time Up',
@@ -482,7 +508,11 @@ class TestPlayerController extends GetxController {
 
   void submitTest() {
     _timer?.cancel();
-    Get.snackbar("Success", "Your has been submitted successfully",backgroundColor: Colors.green);
+    Get.snackbar(
+      "Success",
+      "Your has been submitted successfully",
+      backgroundColor: Colors.green,
+    );
     // API submit call here
   }
 
@@ -504,8 +534,8 @@ class TestPlayerController extends GetxController {
       remainingSeconds.value <= warningThresholdSeconds;
 
   bool get isLastOneMinute => remainingSeconds.value <= 60;
-  bool get isTimerCompleted => remainingSeconds.value <= 0;
 
+  bool get isTimerCompleted => remainingSeconds.value <= 0;
 
   void _showFiveMinuteWarning() {
     Get.snackbar(
@@ -520,17 +550,17 @@ class TestPlayerController extends GetxController {
   }
 
   // ============================================================
-// ADD THESE METHODS TO YOUR TestPlayerController CLASS
-// ============================================================
+  // ADD THESE METHODS TO YOUR TestPlayerController CLASS
+  // ============================================================
 
-// Add these variables at the top with your other state variables:
+  // Add these variables at the top with your other state variables:
   final reviewIndex = 0.obs;
   final isTestCompleted = false.obs;
   Map<String, dynamic> correctAnswersMap = {}; // Will be populated from parser
 
-// ============================================================
-// RESULT & REVIEW METHODS
-// ============================================================
+  // ============================================================
+  // RESULT & REVIEW METHODS
+  // ============================================================
 
   /// Get all questions across all categories
   List<Question> getAllQuestions() {
@@ -579,35 +609,34 @@ class TestPlayerController extends GetxController {
       case QuestionType.mcqSingle:
       case QuestionType.trueFalse:
       case QuestionType.singleDropdown:
-      // For MCQ single, compare the selected answer's key (A, B, C, D)
+        // For MCQ single, compare the selected answer's key (A, B, C, D)
         return question.selectedAnswer == correctAnswer;
 
       case QuestionType.mcqMultiple:
       case QuestionType.multiDropdown:
-      // For multiple choice, split correct answers by semicolon
+        // For multiple choice, split correct answers by semicolon
         final correctAnswers = correctAnswer.split(';').toSet();
         final userAnswers = question.selectedAnswers?.toSet() ?? {};
         return correctAnswers.toString() == userAnswers.toString();
 
       case QuestionType.numerical:
-      // For numerical, parse and compare
-      if(correctAnswer is bool) {
-        final correctNum = double.tryParse('0');
-        return question.numericalAnswer == correctNum;
-      } else {
-        final correctNum = double.tryParse(correctAnswer);
-        return question.numericalAnswer == correctNum;
-      }
-
+        // For numerical, parse and compare
+        if (correctAnswer is bool) {
+          final correctNum = double.tryParse('0');
+          return question.numericalAnswer == correctNum;
+        } else {
+          final correctNum = double.tryParse(correctAnswer);
+          return question.numericalAnswer == correctNum;
+        }
 
       case QuestionType.textType:
       case QuestionType.subjective:
-      // For text, do case-insensitive comparison
+        // For text, do case-insensitive comparison
         return question.textAnswer?.toLowerCase().trim() ==
             correctAnswer.toLowerCase().trim();
 
       case QuestionType.matchTheFollowing:
-      // For matching, compare all pairs
+        // For matching, compare all pairs
         if (question.matchAnswers == null) return false;
         // Parse expected format: "A:1;B:2;C:3"
         final expectedPairs = correctAnswer.split(';');
@@ -648,7 +677,9 @@ class TestPlayerController extends GetxController {
 
   /// Get correct answer text for display
   String getCorrectAnswer(Question question) {
-    return correctAnswersMap['question_${question.number}'] is bool ? "0" : correctAnswersMap['question_${question.number}'] ?? 'N/A';
+    return correctAnswersMap['question_${question.number}'] is bool
+        ? "0"
+        : correctAnswersMap['question_${question.number}'] ?? 'N/A';
   }
 
   /// Get user's answer formatted for display
@@ -661,7 +692,8 @@ class TestPlayerController extends GetxController {
 
       case QuestionType.mcqMultiple:
       case QuestionType.multiDropdown:
-        if (question.selectedAnswers == null || question.selectedAnswers!.isEmpty) {
+        if (question.selectedAnswers == null ||
+            question.selectedAnswers!.isEmpty) {
           return 'Not Answered';
         }
         return question.selectedAnswers!.join(', ');
@@ -682,7 +714,7 @@ class TestPlayerController extends GetxController {
         return question.matchAnswers!.entries
             .map((e) => '${e.key} → ${e.value}')
             .join(', ');
-      }
+    }
   }
 
   /// Get correct answer formatted for display
@@ -695,10 +727,13 @@ class TestPlayerController extends GetxController {
         return answer.split(';').join(', ');
 
       case QuestionType.matchTheFollowing:
-        return answer.split(';').map((pair) {
-          final parts = pair.split(':');
-          return '${parts[0]} → ${parts[1]}';
-        }).join(', ');
+        return answer
+            .split(';')
+            .map((pair) {
+              final parts = pair.split(':');
+              return '${parts[0]} → ${parts[1]}';
+            })
+            .join(', ');
 
       default:
         return answer;
@@ -715,7 +750,7 @@ class TestPlayerController extends GetxController {
         'wrong': 0,
         'skipped': 0,
         'percentage': 0.0,
-        'timeSpent': takenTime
+        'timeSpent': takenTime,
       };
     }
 
@@ -733,11 +768,19 @@ class TestPlayerController extends GetxController {
       }
     }
     String timeSpend = takenTime;
-    if(Session.instance.storedData != null && !Session.instance.isRetest) {
-
-      final minutes = Session.instance.storedData!['storedData']['result']['timeSpentSeconds'] ~/ 60;
-      final seconds = Session.instance.storedData!['storedData']['result']['timeSpentSeconds'] % 60;
-      timeSpend ='${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    if (Session.instance.storedData != null && !Session.instance.isRetest) {
+      final minutes =
+          Session
+              .instance
+              .storedData!['storedData']['result']['timeSpentSeconds'] ~/
+          60;
+      final seconds =
+          Session
+              .instance
+              .storedData!['storedData']['result']['timeSpentSeconds'] %
+          60;
+      timeSpend =
+          '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
     final percentage = (correct / allQuestions.length) * 100;
 
@@ -762,9 +805,7 @@ class TestPlayerController extends GetxController {
 
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Confirm Submission'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -790,68 +831,110 @@ class TestPlayerController extends GetxController {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
-          Obx(() => ElevatedButton(
-            onPressed: isValid.value
-                ? () {
-              Get.back();
-              finalCompleteTest();
-            }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          Obx(
+            () => ElevatedButton(
+              onPressed: isValid.value
+                  ? () {
+                      Get.back();
+                      finalCompleteTest();
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4F46E5),
+              ),
+              child: const Text('Submit Test'),
             ),
-            child: const Text('Submit Test'),
-          )),
+          ),
         ],
       ),
       barrierDismissible: false,
     );
   }
 
-  /// Complete test and show results
-  void finalCompleteTest() {
+  void clearData() {
     _timer?.cancel();
     _stopBlinking();
     isTestCompleted.value = true;
     reviewIndex.value = 0;
+  }
 
-    // Navigate to result screen
-    // Get.to(() => TestResultView());
+  /// Complete test and show results
+  void finalCompleteTest() {
+    clearData();
     final Map<String, dynamic> results = _prepareResultsForSubmission();
-    storage.save('test_$currentTestId', {
+    storage.save(Session.instance.currentTestId, {
       "testJson": selectedQuestions,
       "result": results,
       "completed": true,
+      "numberOfReattempts" : totalReAttempts,
       "timestamp": DateTime.now().toIso8601String(),
     });
     // Get.off(() => const TestResultView());
     Get.off(() => const TestAnalysisView());
-}
+  }
 
   /// Submit test results to server
   Future<void> submitTestResults() async {
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(),
+      ),
+      barrierDismissible: false,
+    );
     try {
-      final results = _prepareResultsForSubmission();
-      print('Results to submit: ${json.encode(results)}');
+      final results = _prepareServerSubmission();
+      final connectivityResult = await NetworkService.hasInternet();
+      if (!connectivityResult) {
+        Get.snackbar(
+          'Error',
+          'Check your internet connection',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        Get.back();
+        return;
+      }
 
-      Get.snackbar(
-        'Success',
-        'Test results submitted successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-
+      final response = await _apiService.submitResult(results);
+      if(response is Exception) {
+        Get.snackbar(
+          'Error',
+          response.toString(),
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        return;
+      }
+      if (response['status']) {
+        Get.until((route) => route.settings.name == AppRoutes.home);
+        Get.snackbar(
+          'Success',
+          'Test results submitted successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        storage.removeByKey(currentTestId);
+      } else {
+        Get.snackbar(
+          'Error',
+          response['message'],
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+      Get.back();
       // Navigate back or to results page
       // Get.back();
-
     } catch (e) {
-      print('Error submitting results: $e');
       Get.snackbar(
         'Error',
         'Failed to submit results. Please try again.',
@@ -860,7 +943,36 @@ class TestPlayerController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
       );
+      Get.back();
     }
+  }
+
+  /// Prepare results data for API submission
+  Map<String, dynamic> _prepareServerSubmission() {
+    final stats = getTestStatistics();
+    final allQuestions = getAllQuestions();
+
+    final answers = allQuestions.map((q) {
+      return {
+        'questionId': q.questionId,
+        'answerRaw': _getUserAnswerForSubmission(q),
+      };
+    }).toList();
+
+    DateTime parsed = DateTime.now();
+    int milliseconds = parsed.millisecondsSinceEpoch;
+    return {
+      'testId': Session.instance.currentTestId.replaceAll("test_", ''),
+      'subjectId': Session.instance.selectedSubject?.id,
+      'classNo': Session.instance.currentUser!['data']['classNo'],
+      'admissionNo': Session.instance.currentUser!['data']['admissionNo'],
+      'entiId': Session.instance.currentUser!['data']['tenantId'],
+      'batchId': Session.instance.currentUser!['data']['batchId'],
+      "startedAt": startedAt.millisecondsSinceEpoch,
+      "numberOfReattempts": totalReAttempts,
+      'answers': answers,
+      'completedAt': milliseconds,
+    };
   }
 
   /// Prepare results data for API submission
@@ -872,6 +984,7 @@ class TestPlayerController extends GetxController {
       return {
         'questionNumber': q.number,
         'questionId': 'question_${q.number}',
+        'serverQuestionId': q.questionId,
         'questionType': q.type.toString(),
         'userAnswer': _getUserAnswerForSubmission(q),
         'correctAnswer': correctAnswersMap['question_${q.number}'],
@@ -879,9 +992,11 @@ class TestPlayerController extends GetxController {
         'isSkipped': isQuestionSkipped(q),
       };
     }).toList();
+    DateTime parsed = DateTime.now();
+    int milliseconds = parsed.millisecondsSinceEpoch;
 
     return {
-      'testId': '471', // Get from your test data
+      'testId': Session.instance.currentTestId, // Get from your test data
       'userId': 'USER_ID', // Get from auth
       'studentId': 'STUDENT_ID', // Get from auth
       'score': stats['correct'],
@@ -891,9 +1006,18 @@ class TestPlayerController extends GetxController {
       'wrongAnswers': stats['wrong'],
       'skippedQuestions': stats['skipped'],
       'timeSpent': stats['timeSpent'],
+      'subjectId': Session.instance.selectedSubject?.id,
+      'subject' : Session.instance.selectedSubject?.name,
+      'subTopic' : Session.instance.selectedSub,
+      'topicName' : Session.instance.selectedTopic?.name,
+      'subtopic' : Session.instance.selectedSubtopic?.name,
+      'category' : Session.instance.selectedCategory,
+      'testNo' : selectedQuestions['data']['testNo'],
+      "numberOfReattempts": totalReAttempts,
       'timeSpentSeconds': totalDurationSeconds - remainingSeconds.value,
       'answers': answers,
-      'completedAt': DateTime.now().toIso8601String(),
+      "startedAt": startedAt.millisecondsSinceEpoch,
+      'completedAt': milliseconds,
     };
   }
 
@@ -918,9 +1042,10 @@ class TestPlayerController extends GetxController {
 
       case QuestionType.matchTheFollowing:
         return question.matchAnswers?.entries
-            .map((e) => '${e.key}:${e.value}')
-            .join(';') ?? '';
-      }
+                .map((e) => '${e.key}:${e.value}')
+                .join(';') ??
+            '';
+    }
   }
 
   Map<String, dynamic> getPerformanceReport() {
@@ -946,7 +1071,6 @@ class TestPlayerController extends GetxController {
     final double positiveMarks = correct * positiveMarkPerQuestion;
     final double negativeMarks = wrong * negativeMarkPerQuestion;
     final double totalScore = positiveMarks - negativeMarks;
-
     return {
       "totalQuestions": allQuestions.length,
       "correct": correct,
@@ -958,7 +1082,6 @@ class TestPlayerController extends GetxController {
     };
   }
 
-
   bool isBookmarked(String questionNumber) {
     return bookmarkedQuestions.contains(questionNumber);
   }
@@ -966,9 +1089,7 @@ class TestPlayerController extends GetxController {
   void _loadBookmarks() {
     final stored = storage.read('bookmarks_$currentTestId');
     if (stored != null && stored is List) {
-      bookmarkedQuestions.assignAll(
-        stored.map((e) => e.toString()).toList(),
-      );
+      bookmarkedQuestions.assignAll(stored.map((e) => e.toString()).toList());
     }
   }
 
@@ -978,48 +1099,44 @@ class TestPlayerController extends GetxController {
     } else {
       bookmarkedQuestions.add(questionNumber);
     }
-    storage.save(
-      'bookmarks_$currentTestId',
-      bookmarkedQuestions.toList(),
-    );
+    storage.save('bookmarks_$currentTestId', bookmarkedQuestions.toList());
     updateNewView();
   }
 
-// ============================================================
-// UPDATE YOUR submitTest() METHOD
-// ============================================================
+  // ============================================================
+  // UPDATE YOUR submitTest() METHOD
+  // ============================================================
 
-// Replace your existing submitTest() with:
-//   void submitTest() {
-//     _timer?.cancel();
-//     _stopBlinking();
-//
-//     // Show confirmation dialog
-//     Get.dialog(
-//       AlertDialog(
-//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-//         title: const Text('Submit Test?'),
-//         content: const Text(
-//           'Are you sure you want to submit the test? You cannot change your answers after submission.',
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () => Get.back(),
-//             child: const Text('Cancel'),
-//           ),
-//           ElevatedButton(
-//             onPressed: () {
-//               Get.back();
-//               completeTest();
-//             },
-//             style: ElevatedButton.styleFrom(
-//               backgroundColor: const Color(0xFF4F46E5),
-//             ),
-//             child: const Text('Submit'),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
+  // Replace your existing submitTest() with:
+  //   void submitTest() {
+  //     _timer?.cancel();
+  //     _stopBlinking();
+  //
+  //     // Show confirmation dialog
+  //     Get.dialog(
+  //       AlertDialog(
+  //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //         title: const Text('Submit Test?'),
+  //         content: const Text(
+  //           'Are you sure you want to submit the test? You cannot change your answers after submission.',
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Get.back(),
+  //             child: const Text('Cancel'),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Get.back();
+  //               completeTest();
+  //             },
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: const Color(0xFF4F46E5),
+  //             ),
+  //             child: const Text('Submit'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 }

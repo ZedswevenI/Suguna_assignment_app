@@ -7,9 +7,11 @@ import 'package:suguna_assignment_app/core/routes/app_routes.dart';
 import 'package:suguna_assignment_app/core/widgets/score_circle.dart';
 import 'package:suguna_assignment_app/data/services/network_service.dart';
 import 'package:suguna_assignment_app/data/services/sessions.dart';
+import 'package:suguna_assignment_app/modules/test_player/controllers/test_player_controller.dart';
 import '../../../core/services/assigment_api_services.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../data/services/store_service.dart';
+import '../../test_player/controllers/test_player_parser.dart';
 import '../../test_player/views/test_review_view.dart';
 import '../views/topic_assignments_view.dart';
 
@@ -48,14 +50,11 @@ class TopicAssignmentsController extends GetxController {
       final connectivityResult = await NetworkService.hasInternet();
       final String academicYear =
           loginResponse['admissionNo']?.toString() ?? '';
-      final String entId =
-          loginResponse['tenantId']?.toString() ?? '';
-      final int classNo =
-          loginResponse['classNo'] ?? '';
+      final String entId = loginResponse['tenantId']?.toString() ?? '';
+      final int classNo = loginResponse['classNo'] ?? '';
 
       // 🔑 Unique key per subject
-      final String storageKey =
-          "topics_${subject.id}_$classNo";
+      final String storageKey = "topics_${subject.id}_$classNo";
 
       if (connectivityResult) {
         // ================= ONLINE =================
@@ -66,9 +65,7 @@ class TopicAssignmentsController extends GetxController {
           entId,
         );
         // Save API response locally
-        storage.saveTopics({
-          storageKey: response
-        });
+        storage.saveTopics({storageKey: response});
 
         topics.value = mapTopicsFromApi(response);
 
@@ -95,8 +92,7 @@ class TopicAssignmentsController extends GetxController {
 
       // ✅ After loading topics, scan storage for cached assignments
       _scanAndPopulateCachedAssignments();
-
-    } catch (e,s) {
+    } catch (e, s) {
       Get.snackbar('Error', 'Failed to load topics: $e');
       print("Came to error ${e}");
     } finally {
@@ -128,7 +124,6 @@ class TopicAssignmentsController extends GetxController {
       }
       // Trigger UI rebuild to show correct circle colors
       downloadedSubtopicIds.refresh();
-
     } catch (e) {
       print('❌ Error scanning storage: $e');
     }
@@ -150,7 +145,7 @@ class TopicAssignmentsController extends GetxController {
 
   List<TopicModel> mapTopicsFromApi(Map<String, dynamic> response) {
     final Map<String, dynamic> subtopicsByTopics =
-    response['data']['subtopicsByTopics'];
+        response['data']['subtopicsByTopics'];
 
     final List<TopicModel> topics = [];
 
@@ -158,48 +153,86 @@ class TopicAssignmentsController extends GetxController {
       final List<SubtopicModel> subtopics = [];
 
       for (final subtopic in subtopicsList) {
-        /// 🔥 Category -> SubCategory -> AssignmentScore
-        final Map<String, Map<String, List<AssignmentScore>>> scores = {};
+        /// 🔥 Step 1: Collect ALL assignments flat
+        final List<TempAssignment> allTests = [];
 
         for (final test in subtopic['test']) {
-          final String examCategory = test['examCategory'] ?? '';
-          final String examSubCategory = test['examSubCategory'] ?? '';
-          scores
-              .putIfAbsent(examCategory, () => {})
-              .putIfAbsent(examSubCategory, () => [])
-              .add(
-            AssignmentScore(
-              cgpa: test['cgpa'] == null ? null : double.parse(test['cgpa'].toString()) ,
-              isEnabled: test['isEnabled'] ,
-              status: test['status'] ,
-              testId: test['testId'] ?? '',
-              sortOrder: test['sortOrder'] ?? 0,
+          allTests.add(
+            TempAssignment(
+              category: test['examCategory'] ?? '',
+              subCategory: test['examSubCategory'] ?? '',
+              assignment: AssignmentScore(
+                cgpa: test['cgpa'] == null
+                    ? null
+                    : double.parse(test['cgpa'].toString()),
+                isEnabled: test['isEnabled'],
+                status: test['status'],
+                testId: test['testId'] ?? '',
+                sortOrder: test['sortOrder'] ?? 0,
+              ),
             ),
           );
         }
 
-        /// 🔥 Sort each subcategory list
-        scores.forEach((categoryKey, subCategoryMap) {
-          subCategoryMap.forEach((subKey, list) {
-            list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        /// 🔥 Step 2: Sort all tests by sortOrder
+        allTests.sort(
+          (a, b) => a.assignment.sortOrder.compareTo(b.assignment.sortOrder),
+        );
+
+        /// 🔥 Step 3: Extract flat ordered list
+        final orderedList = allTests.map((e) => e.assignment).toList();
+
+        /// 🔥 Step 4: Rebuild nested structure with sorted subcategories
+        final Map<String, Map<String, List<AssignmentScore>>> scores = {};
+
+        for (final item in allTests) {
+          scores
+              .putIfAbsent(item.category, () => {})
+              .putIfAbsent(item.subCategory, () => [])
+              .add(item.assignment);
+        }
+
+        /// 🔥 Step 5: Sort assignments within each subcategory
+        scores.forEach((category, subcategories) {
+          subcategories.forEach((subCategory, assignments) {
+            assignments.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
           });
         });
+
+        /// 🔥 Step 6: Sort subcategories by their minimum sortOrder
+        final sortedScores = Map.fromEntries(
+          scores.entries.map((categoryEntry) {
+            final sortedSubcategories = Map.fromEntries(
+              categoryEntry.value.entries.toList()..sort((a, b) {
+                final minOrderA = a.value.isEmpty
+                    ? 0
+                    : a.value
+                          .map((e) => e.sortOrder)
+                          .reduce((min, order) => min < order ? min : order);
+                final minOrderB = b.value.isEmpty
+                    ? 0
+                    : b.value
+                          .map((e) => e.sortOrder)
+                          .reduce((min, order) => min < order ? min : order);
+                return minOrderA.compareTo(minOrderB);
+              }),
+            );
+            return MapEntry(categoryEntry.key, sortedSubcategories);
+          }),
+        );
 
         subtopics.add(
           SubtopicModel(
             id: subtopic['subtopicId'],
             name: subtopic['subtopicName'],
-            scores: scores,
+            scores: sortedScores,
+            orderedAssignments: orderedList,
           ),
         );
       }
 
       topics.add(
-        TopicModel(
-          id: categoryName,
-          name: categoryName,
-          subtopics: subtopics,
-        ),
+        TopicModel(id: categoryName, name: categoryName, subtopics: subtopics),
       );
     });
 
@@ -211,7 +244,8 @@ class TopicAssignmentsController extends GetxController {
     return apiValue;
   }
 
-  void selectTopic(String topicId) {
+  void selectTopic(String topicId,TopicModel topic) {
+    Session.instance.selectedTopic = topic;
     selectedTopicId.value = topicId;
     selectedSubtopicId.value = null;
     selectedColumnKey.value = null;
@@ -220,10 +254,142 @@ class TopicAssignmentsController extends GetxController {
   TopicModel? get selectedTopic {
     if (selectedTopicId.value.isEmpty) return null;
     try {
+      Session.instance.selectedTopic = topics.firstWhere((t) => t.id == selectedTopicId.value);
       return topics.firstWhere((t) => t.id == selectedTopicId.value);
     } catch (e) {
       return null;
     }
+  }
+
+  bool validatePreviousAssignment(
+    SubtopicModel subtopic,
+    String currentTestId
+      ) {
+    final List<AssignmentScore> allAssignments = [];
+
+    // 🔥 Flatten ALL categories and subcategories
+    subtopic.scores.forEach((category, subMap) {
+      for (final list in subMap.values) {
+        allAssignments.addAll(list);
+      }
+    });
+
+    // allAssignments.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    for (var a in allAssignments) {
+      print("${a.testId} | sort: ${a.sortOrder}");
+    }
+
+    final currentIndex = allAssignments.indexWhere(
+      (a) => a.testId == currentTestId,
+    );
+
+    if (currentIndex <= 0) {
+      return true; // First assignment allowed
+    }
+
+    final previous = allAssignments[currentIndex - 1];
+    print("TEst datas ${previous.testId}");
+    print("TEst data ${currentTestId}");
+
+    final stored = _readFromStorage("test_${previous.testId}");
+
+    // print("Is compledt ${ stored['completed']}");
+    final bool isCompletedFromStorage =
+        stored != null && stored['completed'] == true;
+
+    final bool isCompletedFromCgpa = previous.cgpa != null;
+
+    final bool isCompleted = isCompletedFromStorage || isCompletedFromCgpa;
+
+    print("IS comepletd ${isCompleted}");
+    return isCompleted;
+  }
+
+  List<Question> getAllQuestions(List<QuestionCategory> categories) {
+    return categories.expand((cat) => cat.questions).toList();
+  }
+
+  Map<String, dynamic> buildSubmissionFromApiAndStorage({
+    required Map<String, dynamic> questionsApi,
+    required Map<String, dynamic> storedResult,
+  }) {
+    final List<dynamic> questionList =
+        questionsApi['data']?['questions'] ?? [];
+
+    final List<dynamic> storedAnswers =
+        storedResult['data'][0]['answers'] ?? [];
+
+    // Convert stored answers to map for quick lookup
+    final Map<String, dynamic> answerMap = {
+      for (var a in storedAnswers)
+        a['questionId']: a
+    };
+
+    int correct = 0;
+    int wrong = 0;
+    int skipped = 0;
+
+    final List<Map<String, dynamic>> answers = [];
+
+    for (int i = 0; i < questionList.length; i++) {
+      final serverQuestionId = questionList[i]['questionId'];
+      final questionNumber = i + 1;
+
+      final stored = answerMap[serverQuestionId];
+
+      final isCorrectVal = stored?['isCorrect'] == true;
+      final isSkippedVal = stored?['isSkipped'] == true;
+
+      if (isSkippedVal) {
+        skipped++;
+      } else if (isCorrectVal) {
+        correct++;
+      } else {
+        wrong++;
+      }
+
+      // print("User ansr ${stored['answerRaw']}");
+
+      answers.add({
+        'questionNumber': questionNumber,
+        'questionId': 'question_$questionNumber',
+        'serverQuestionId': serverQuestionId,
+        'questionType': questionList[i]['questionType'],
+        'userAnswer': stored?['answerRaw'],
+        'correctAnswer': questionList[i]['correctAnswer'],
+        'isCorrect': isCorrectVal,
+        'isSkipped': isSkippedVal,
+      });
+    }
+
+    final total = questionList.length;
+    final percentage = total == 0 ? 0.0 : (correct / total) * 100;
+
+    return {
+      'testId': storedResult['testId'],
+      'userId':loginResponse['tenantId'],
+      'studentId': loginResponse['admissionNo'],
+      'score': correct,
+      'totalQuestions': total,
+      'percentage': percentage,
+      'correctAnswers': correct,
+      'wrongAnswers': wrong,
+      'skippedQuestions': skipped,
+      'timeSpent': storedResult['timeSpent'],
+      'subjectId': storedResult['subjectId'],
+      'subject': storedResult['subject'],
+      'subTopic': storedResult['subTopic'],
+      'topicName': storedResult['topicName'],
+      'subtopic': storedResult['subtopic'],
+      'category': storedResult['category'],
+      'testNo': questionsApi['data']?['testNo'],
+      'numberOfReattempts': storedResult['numberOfReattempts'] ?? 1,
+      'timeSpentSeconds': storedResult['timeSpentSeconds'] ?? 0,
+      'answers': answers,
+      'startedAt': storedResult['startedAt'],
+      'completedAt': storedResult['completedAt'],
+    };
   }
 
   // ============================================================
@@ -231,25 +397,75 @@ class TopicAssignmentsController extends GetxController {
   // ============================================================
 
   void onCircleTap(
-      String subtopicId,
-      String columnKey,
-      String testId,
-      bool canDownload,
-      SubtopicModel subtopic,
-      String subCate
-      ) async {
-
-    if(!canDownload) {
+    String subtopicId,
+    String columnKey,
+    String testId,
+    bool canDownload,
+    SubtopicModel subtopic,
+    String subCate,
+     String category,
+  ) async {
+    print("Can down ${canDownload}");
+    if (!canDownload) {
+      final int classNo = loginResponse['classNo'];
+      final String academicYear = loginResponse['admissionNo'];
+      final String entId = loginResponse['tenantId'];
+      List<QuestionCategory> categories = [];
+      final response = await _apiService.loadQuestions(
+        subject.name,
+        classNo,
+        testId,
+        academicYear,
+        entId,
+      );
+      final data = await _apiService.getAnswers(
+        loginResponse['batchId'],
+        testId,
+        academicYear,
+        entId,
+      );
+      Session.instance.isNewTest = false;
+      Session.instance.isRetest = false;
+      Session.instance.storedData =   {
+        'testId' : '',
+        'storedData' : {
+          "testJson": response,
+          "result":  buildSubmissionFromApiAndStorage(questionsApi: response,storedResult: data),
+          "completed": true,
+          "numberOfReattempts" : 0,
+          "timestamp": DateTime.now().toIso8601String(),
+        },
+      };
+      Session.instance.isCompletedAssignment = true;
+      Get.toNamed(AppRoutes.testAnalysis);
+      return;
+    }
+    if (!validatePreviousAssignment(subtopic, testId)) {
+      Get.defaultDialog(
+        title: "Assignment Locked",
+        middleText:
+            "Kindly complete the previous assignment before starting a new one.",
+        textConfirm: "OK",
+        confirmTextColor: Colors.white,
+        buttonColor: Colors.red,
+        radius: 12,
+        barrierDismissible: false,
+        // user must press OK
+        onConfirm: () {
+          Get.back();
+        },
+      );
       return;
     }
 
     Session.instance.selectedSub = subCate;
     Session.instance.selectedSubtopic = subtopic;
+    Session.instance.selectedCategory = columnKey;
+
 
     // 🔑 Create unique key for this assignment
     final key = '$subtopicId-$columnKey-$testId';
     final questionsStorageKey = "questions_$key";
-    final testDataStorageKey = "test_$testId";
 
     // ======= UI Selection =======
     selectedSubtopicId.value = subtopicId;
@@ -260,8 +476,9 @@ class TopicAssignmentsController extends GetxController {
       final cachedQuestions = _readFromStorage(questionsStorageKey);
       final testDataKey = "test_${selectedTestId.value}";
       final stored = _readFromStorage(testDataKey);
-      if(stored != null && stored is Map) {
-        isTestCompleted.value = stored['completed'] == true || stored['data']?['completed'] == true;
+      if (stored != null && stored is Map) {
+        isTestCompleted.value =
+            stored['completed'] == true || stored['data']?['completed'] == true;
       } else {
         isTestCompleted.value = false;
       }
@@ -278,7 +495,6 @@ class TopicAssignmentsController extends GetxController {
         return;
       }
 
-
       // =========================
       // 2️⃣ PREVENT DOUBLE DOWNLOADS
       // =========================
@@ -287,8 +503,12 @@ class TopicAssignmentsController extends GetxController {
       }
 
       final connectivityResult = await NetworkService.hasInternet();
-      if(!connectivityResult) {
-        Get.snackbar('Error', 'Check your internet connection and try again',backgroundColor: Colors.red);
+      if (!connectivityResult) {
+        Get.snackbar(
+          'Error',
+          'Check your internet connection and try again',
+          backgroundColor: Colors.red,
+        );
         return;
       }
 
@@ -322,7 +542,6 @@ class TopicAssignmentsController extends GetxController {
       downloadedSubtopicIds.add(key);
       downloadedSubtopicIds.refresh();
     } catch (e) {
-
       // =========================
       // 5️⃣ TRY FALLBACK CACHE
       // =========================
@@ -361,17 +580,16 @@ class TopicAssignmentsController extends GetxController {
       Get.snackbar('Error', 'Please select an assignment first');
       return;
     }
-
+    Session.instance.isCompletedAssignment = false;
+    Session.instance.currentTestId = 'test_${selectedTestId.value ?? ''}';
     try {
       final testDataKey = "test_${selectedTestId.value}";
       // Try to read stored test data
       final stored = _readFromStorage(testDataKey);
-
       if (stored != null && stored is Map) {
-
         // Verify it has completion flag
-        final isCompleted =  stored['completed'] == true ||
-            stored['data']?['completed'] == true;
+        final isCompleted =
+            stored['completed'] == true || stored['data']?['completed'] == true;
 
         if (isCompleted) {
           Session.instance.isNewTest = false;
@@ -386,46 +604,76 @@ class TopicAssignmentsController extends GetxController {
           return;
         }
       }
+      try {
+        TestPlayerController.to.initData();
+        Session.instance.isNewTest = true;
+        Session.instance.storedData = null;
+        Get.toNamed(
+          AppRoutes.assignmentInstructions,
+          arguments: {
+            'subtopicId': selectedSubtopicId.value,
+            'columnKey': selectedColumnKey.value,
+            'testId': selectedTestId.value,
+            'selectedQuestion': selectedQuestions,
+          },
+        );
 
+        // Clear selection
+        selectedSubtopicId.value = null;
+        selectedColumnKey.value = null;
+        selectedTestId.value = null;
+      } catch (e) {
+        Session.instance.isNewTest = true;
+        Session.instance.storedData = null;
+
+        Get.toNamed(
+          AppRoutes.assignmentInstructions,
+          arguments: {
+            'subtopicId': selectedSubtopicId.value,
+            'columnKey': selectedColumnKey.value,
+            'testId': selectedTestId.value,
+            'selectedQuestion': selectedQuestions,
+          },
+        );
+        // Clear selection
+        selectedSubtopicId.value = null;
+        selectedColumnKey.value = null;
+        selectedTestId.value = null;
+      }
       // No completed test found - start new assignment
-      Session.instance.isNewTest = true;
-      Session.instance.storedData = null;
-
-      Get.toNamed(
-        AppRoutes.assignmentInstructions,
-        arguments: {
-          'subtopicId': selectedSubtopicId.value,
-          'columnKey': selectedColumnKey.value,
-          'testId': selectedTestId.value,
-          'selectedQuestion': selectedQuestions
-        },
-      );
-
-      // Clear selection
-      selectedSubtopicId.value = null;
-      selectedColumnKey.value = null;
-      selectedTestId.value = null;
-
     } catch (e) {
-      print('⚠️ Error in startAssignment: $e');
-
       // Default to new assignment if anything goes wrong
       Session.instance.isNewTest = true;
       Session.instance.storedData = null;
 
-      Get.toNamed(
-        AppRoutes.assignmentInstructions,
-        arguments: {
-          'subtopicId': selectedSubtopicId.value,
-          'columnKey': selectedColumnKey.value,
-          'testId': selectedTestId.value,
-          'selectedQuestion': selectedQuestions
-        },
-      );
-
-      selectedSubtopicId.value = null;
-      selectedColumnKey.value = null;
-      selectedTestId.value = null;
+      try {
+        TestPlayerController.to.initData();
+        Get.toNamed(
+          AppRoutes.assignmentInstructions,
+          arguments: {
+            'subtopicId': selectedSubtopicId.value,
+            'columnKey': selectedColumnKey.value,
+            'testId': selectedTestId.value,
+            'selectedQuestion': selectedQuestions,
+          },
+        );
+        selectedSubtopicId.value = null;
+        selectedColumnKey.value = null;
+        selectedTestId.value = null;
+      } catch (e) {
+        Get.toNamed(
+          AppRoutes.assignmentInstructions,
+          arguments: {
+            'subtopicId': selectedSubtopicId.value,
+            'columnKey': selectedColumnKey.value,
+            'testId': selectedTestId.value,
+            'selectedQuestion': selectedQuestions,
+          },
+        );
+        selectedSubtopicId.value = null;
+        selectedColumnKey.value = null;
+        selectedTestId.value = null;
+      }
     }
   }
 
@@ -480,10 +728,10 @@ class TopicAssignmentsController extends GetxController {
 
   /// Get circle state - shows if downloading, downloaded, or default
   CircleState getCircleState(
-      String subtopicId,
-      String columnKey,
-      String testId,
-      ) {
+    String subtopicId,
+    String columnKey,
+    String testId,
+  ) {
     final key = '$subtopicId-$columnKey-$testId';
     if (downloadingSubtopicIds.contains(key)) {
       return CircleState.downloading;
@@ -497,14 +745,14 @@ class TopicAssignmentsController extends GetxController {
   }
 
   AssignmentStatus getAssignmentStatus(
-      String subtopicId,
-      String columnKey,
-      String testId,
-      String status
-      ) {
+    String subtopicId,
+    String columnKey,
+    String testId,
+    String status,
+  ) {
     final key = '$subtopicId-$columnKey-$testId';
 
-    if(status != "ASSIGNED") {
+    if (status != "ASSIGNED") {
       return AssignmentStatus.locked;
     }
 
@@ -519,11 +767,7 @@ class TopicAssignmentsController extends GetxController {
     return AssignmentStatus.notOpened;
   }
 
-  ScoreLevel? getScoreLevel(
-     double? score,
-      String status
-      ) {
-
+  ScoreLevel? getScoreLevel(double? score, String status) {
     if (status != "COMPLETED" || score == null) {
       return null;
     }
@@ -564,11 +808,7 @@ class TopicAssignmentsController extends GetxController {
     }
   }
 
-  String buildQuestionKey(
-      String subtopicId,
-      String columnKey,
-      String testId,
-      ) {
+  String buildQuestionKey(String subtopicId, String columnKey, String testId) {
     return '$subtopicId-$columnKey-$testId';
   }
 }

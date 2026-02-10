@@ -126,11 +126,6 @@ class HomeAssignmentsController extends GetxController {
           if (subjects.isNotEmpty) {
             selectedSubject.value = subjects.first;
           }
-          //
-          // Get.snackbar(
-          //   "Offline Mode",
-          //   "Loaded subjects from local storage",
-          // );
         } else {
           Get.snackbar(
             "No Internet",

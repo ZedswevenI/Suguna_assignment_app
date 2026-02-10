@@ -725,6 +725,7 @@ class QuestionOptionsWidget extends StatelessWidget {
             GetBuilder<TestPlayerController>(
               builder: (controller) {
                 return TextField(
+                  controller: controller.numericalController,  // 👈 important
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     hintText: 'Enter your answer',
@@ -740,10 +741,8 @@ class QuestionOptionsWidget extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                   onChanged: (value) {
-                    final num = double.tryParse(value);
-                    if (num != null) {
-                      controller.setNumericalAnswer(num);
-                    }
+                    // final num = double.tryParse(value);
+                    controller.setTextAnswer(value);
                   },
                 );
               },

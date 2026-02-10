@@ -19,6 +19,7 @@ class Session extends GetxController {
   TopicModel? selectedTopic;
   SubtopicModel? selectedSubtopic;
   String? selectedSub;
-
-
+  String? selectedCategory;
+  String currentTestId ='';
+  bool isCompletedAssignment = false;
 }

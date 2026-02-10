@@ -37,27 +37,30 @@ class AppLayout extends StatelessWidget {
         }
 
         return Scaffold(
+          backgroundColor: Colors.white,
           drawer: showSidebar
               ? Drawer(
                   width: AppConstants.sidebarWidth,
                   child: AppSidebar(selectedRoute: selectedRoute),
                 )
               : null,
-          body: Column(
-            children: [
-              // Top Header
-              AppHeader(
-                subjectName: subjectName,
-                classInfo: classInfo,
-                assignmentLabel: assignmentLabel,
-                showMenuIcon: showSidebar,
-                showBackButton: showBackButton,
-              ),
-              // Main Content Area
-              Expanded(
-                child: Container(color: Colors.white, child: child),
-              ),
-            ],
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Top Header
+                AppHeader(
+                  subjectName: subjectName,
+                  classInfo: classInfo,
+                  assignmentLabel: assignmentLabel,
+                  showMenuIcon: showSidebar,
+                  showBackButton: showBackButton,
+                ),
+                // Main Content Area
+                Expanded(
+                  child: Container(color: Colors.white, child: child),
+                ),
+              ],
+            ),
           ),
         );
       },

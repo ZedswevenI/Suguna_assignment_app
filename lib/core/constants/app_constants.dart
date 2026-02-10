@@ -4,7 +4,7 @@ class AppConstants {
   static const Duration timeout = Duration(seconds: 30);
   
   // Layout Constants
-  static const double sidebarWidth = 220.0;
+  static const double sidebarWidth = 300.0;
   static const double headerHeight = 64.0;
   static const double circleSize = 24.0;
   static const double circleSpacing = 8.0;

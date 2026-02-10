@@ -31,8 +31,8 @@ dependencies:
   flutter_tex: ^5.1.10
   latext: ^0.4.1
   connectivity_plus: ^5.0.2
-
-
+  intl: ^0.18.0
+  webview_flutter: ^4.13.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -44,3 +44,4 @@ flutter:
 
   assets:
     - assets/test.json
+    - assets/usage.html

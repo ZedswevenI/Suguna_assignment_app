@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tex/flutter_tex.dart';
 import 'package:get/get.dart';
 import 'package:suguna_assignment_app/core/theme/app_colors.dart';
+import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/services/sessions.dart';
 import '../controllers/test_player_controller.dart';
@@ -17,24 +18,28 @@ class TestResultView extends GetView<TestPlayerController> {
   const TestResultView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(controller),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: _buildQuestionReview(controller),
-                  ),
-                  _buildSummaryPanel(controller),
-                ],
+    return AppLayout(
+      selectedRoute: '',
+      showBackButton: true,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // _buildHeader(controller),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildQuestionReview(controller),
+                    ),
+                    _buildSummaryPanel(controller),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -129,13 +134,13 @@ class TestResultView extends GetView<TestPlayerController> {
                     const Color(0xFF6B7280),
                     Icons.remove_circle_outline_rounded,
                   ),
-                  const SizedBox(width: 16),
-                  _buildStatCard(
-                    'Time',
-                    stats['timeSpent'] as String,
-                    const Color(0xFF8B5CF6),
-                    Icons.timer_outlined,
-                  ),
+                  // const SizedBox(width: 16),
+                  // _buildStatCard(
+                  //   'Time',
+                  //   stats['timeSpent'] as String,
+                  //   const Color(0xFF8B5CF6),
+                  //   Icons.timer_outlined,
+                  // ),
                 ],
               ),
             ),
@@ -175,20 +180,20 @@ class TestResultView extends GetView<TestPlayerController> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () => _showSubmitConfirmation(controller),
-                  icon: const Icon(Icons.send_rounded, size: 20),
-                  label: const Text('Submit Results'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+                // const SizedBox(width: 12),
+                // ElevatedButton.icon(
+                //   onPressed: () => _showSubmitConfirmation(controller),
+                //   icon: const Icon(Icons.send_rounded, size: 20),
+                //   label: const Text('Submit Results'),
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.white,
+                //     foregroundColor: AppColors.primary,
+                //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(12),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ],
@@ -426,7 +431,13 @@ class TestResultView extends GetView<TestPlayerController> {
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: OutlinedButton.icon(
-                      onPressed: () => {},
+                      onPressed: () {
+                        _showReportQuestionDialog(
+                          controller,
+                          question.questionId,
+                          question.number,
+                        );
+                        },
                       icon: const Icon(Icons.flag_outlined, size: 16),
                       label: const Text('Report'),
                       style: OutlinedButton.styleFrom(
@@ -812,34 +823,34 @@ class TestResultView extends GetView<TestPlayerController> {
                     _buildSummaryItem('Question Type', _getQuestionTypeName(question.type)),
                     _buildSummaryItem('Question Number', '${question.number}'),
                     // _buildSummaryItem('Difficulty', 'Medium'),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FC),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Your score',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            isCorrect ? '+1' : '0',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Container(
+                    //   padding: const EdgeInsets.all(16),
+                    //   decoration: BoxDecoration(
+                    //     color: const Color(0xFFF8F9FC),
+                    //     borderRadius: BorderRadius.circular(12),
+                    //   ),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //     children: [
+                    //       const Text(
+                    //         'Your score',
+                    //         style: TextStyle(
+                    //           fontSize: 14,
+                    //           fontWeight: FontWeight.w600,
+                    //           color: Colors.grey,
+                    //         ),
+                    //       ),
+                    //       Text(
+                    //         isCorrect ? '+1' : '0',
+                    //         style: TextStyle(
+                    //           fontSize: 20,
+                    //           fontWeight: FontWeight.w900,
+                    //           color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 24),
                     const Divider(),
@@ -1109,6 +1120,172 @@ class TestResultView extends GetView<TestPlayerController> {
       ),
     );
   }
+
+  void _showReportQuestionDialog(
+      TestPlayerController controller,
+      String questionId,
+      int questionNumber,
+      ) {
+    final TextEditingController commentController = TextEditingController();
+    String selectedIssue = "Incorrect Answer";
+
+    final List<String> issueTypes = [
+      "Incorrect Answer",
+      "Typo / Spelling Mistake",
+      "Question Not Clear",
+      "Options Missing / Incorrect",
+      "Duplicate Question",
+      "Other",
+    ];
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          width: 500, // wider dialog
+          padding: const EdgeInsets.all(24),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// HEADER
+                  Row(
+                    children: [
+                      const Icon(Icons.flag_rounded,
+                          color: Colors.red, size: 26),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Report Question $questionNumber",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// ISSUE TYPE DROPDOWN
+                  const Text(
+                    "Type of Issue",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  DropdownButtonFormField<String>(
+                    value: selectedIssue,
+                    items: issueTypes
+                        .map(
+                          (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      ),
+                    )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedIssue = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 14),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// COMMENT BOX
+                  const Text(
+                    "Describe the issue",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  TextField(
+                    controller: commentController,
+                    maxLines: 4,
+                    maxLength: 250,
+                    decoration: InputDecoration(
+                      hintText: "Write your comment here...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// ACTION BUTTONS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Get.back(),
+                        child: const Text("Cancel"),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (commentController.text.trim().isEmpty) {
+                            Get.snackbar(
+                              "Error",
+                              "Please enter a comment",
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+                          Get.back();
+                          // controller.reportQuestion(
+                          //   questionId: questionId,
+                          //   issueType: selectedIssue,
+                          //   comment: commentController.text.trim(),
+                          // );
+
+
+                          Get.snackbar(
+                            "Reported",
+                            "Question reported successfully",
+                            backgroundColor: Colors.green,
+                            colorText: Colors.white,
+                          );
+
+
+                        },
+                        icon: const Icon(Icons.send, size: 18),
+                        label: const Text("Submit"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class DonutChartPainter extends CustomPainter {
@@ -1202,4 +1379,5 @@ class DonutChartPainter extends CustomPainter {
         oldDelegate.wrong != wrong ||
         oldDelegate.skipped != skipped;
   }
+
 }

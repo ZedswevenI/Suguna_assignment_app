@@ -51,5 +51,26 @@ class StorageService {
     return _box.read(key);
   }
 
+  List<dynamic> getAllKeys() {
+    return _box.getKeys().toList();
+  }
+
+  void removeByKey(String key) {
+    _box.remove(key);
+  }
+
+  void clearAllExceptUser() {
+    try {
+      final userData = _box.read('user'); // backup user
+      _box.erase(); // 🚨 clears everything
+      if (userData != null) {
+        _box.write('user', userData); // restore user
+      }
+      print("✅ Local storage cleared (user preserved)");
+    } catch (e) {
+      print("❌ Error clearing storage: $e");
+    }
+  }
+
   bool get isLoggedIn => _box.hasData('user');
 }

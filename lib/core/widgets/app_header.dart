@@ -55,12 +55,14 @@ class AppHeader extends StatelessWidget {
                   ),
                 ),
               if (subjectName != null)
-                Text(
-                  subjectName!,
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
-                    fontSize: AppConstants.normalTextSize,
-                    fontWeight: FontWeight.w500,
+                Center(
+                  child: Text(
+                    subjectName!,
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontSize: AppConstants.sectionTitleSize,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               if (subjectName != null && classInfo != null)

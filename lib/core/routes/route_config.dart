@@ -68,7 +68,7 @@ class RouteConfig {
       ),
       GetPage(
         name: AppRoutes.fileManager,
-        page: () => const FileManagerView(),
+        page: () =>  FileManagerView(),
         binding: FileManagerBinding(),
       ),
       GetPage(
