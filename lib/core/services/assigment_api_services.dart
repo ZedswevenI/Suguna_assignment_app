@@ -97,4 +97,15 @@ class AssignmentApiServices extends ApiService {
       return e;
     }
   }
+
+  Future<dynamic> downloadQuestionImage(String url) async {
+    return await post(
+      '/assignment/question/image/download',
+      body: {
+        "url": url,
+      },
+    );
+  }
+
+
 }

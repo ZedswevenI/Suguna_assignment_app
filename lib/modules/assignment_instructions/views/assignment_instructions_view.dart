@@ -10,7 +10,8 @@ import '../../test_player/controllers/test_player_parser.dart';
 
 class AssignmentInstructionsView
     extends GetView<AssignmentInstructionsController> {
-  const AssignmentInstructionsView({super.key});
+  final bool startTest;
+  const AssignmentInstructionsView({super.key,this.startTest = true});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,11 @@ class AssignmentInstructionsView
       canPop: false, // prevent default pop
       onPopInvoked: (didPop) {
         if (didPop) return;
-        Get.offAllNamed(AppRoutes.home);
+        if(startTest) {
+          Get.offAllNamed(AppRoutes.home);
+        } else {
+          Get.close(1);
+        }
       },
       child: Scaffold(
         backgroundColor: Colors.black54,
@@ -201,10 +206,14 @@ class AssignmentInstructionsView
                   backgroundColor: const Color(0xFF4F46E5),
                 ),
                 onPressed: () {
-                  controller.onAccept();
+                  if(startTest) {
+                    controller.onAccept();
+                  } else {
+                    Get.close(1);
+                  }
                 },
-                child: const Text(
-                  "Start Test",
+                child:  Text(
+                  startTest ? "Start Test" : "Close",
                   style: TextStyle(fontSize: 16),
                 ),
               ),

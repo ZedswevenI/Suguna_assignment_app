@@ -568,7 +568,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
       height: 42,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.transparent,
+        color: Colors.black,
         border: Border.all(
           color: Colors.grey.withOpacity(0.3),
           width: 1,
@@ -790,13 +790,16 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
           case ScoreLevel.none:
             color = const Color(0xFFE5E7EB);
             borderColor = const Color(0xFFD1D5DB);
+
         }
+
       } else {
         switch (widget.status ?? AssignmentStatus.notOpened) {
           case AssignmentStatus.notOpened:
-            color = const Color(0xFF7C8798);
-            borderColor = const Color(0xFF374151);
+            color = const Color(0xFFC6CBD5);
+            borderColor = const Color(0xFF8E909E);
             break;
+
           case AssignmentStatus.available:
             color = Colors.white; // White
             borderColor = const Color(0xFFD1D5DB);
@@ -810,7 +813,7 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
           case AssignmentStatus.attempted:
             color = const Color(0xFFE5E7EB);
             borderColor = const Color(0xFFD1D5DB);
-        }
+          }
       }
     }
 

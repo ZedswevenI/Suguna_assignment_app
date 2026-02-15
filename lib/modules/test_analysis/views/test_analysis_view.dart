@@ -31,11 +31,11 @@ class TestAnalysisView extends StatelessWidget {
                       children: [
                         _buildPerformanceReport(controller),
                         const SizedBox(height: 24),
-                        _buildQuestionsSection(controller),
-                        const SizedBox(height: 24),
                         _buildPerformanceChart(controller),
                         const SizedBox(height: 24),
                         _buildKeyMetrics(controller),
+                        const SizedBox(height: 24),
+                        _buildQuestionsSection(controller),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -47,7 +47,6 @@ class TestAnalysisView extends StatelessWidget {
         ),
       );
     });
-
   }
 
   // ============================================================
@@ -211,102 +210,106 @@ class TestAnalysisView extends StatelessWidget {
     final skipped = stats['skipped'] as int;
     final percentage = stats['percentage'] as double;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildMetricCard(
-            "Total Questions",
-            total.toString(),
-            const Color(0xFF3B82F6),
-            Icons.quiz_outlined,
-          ),
-          const SizedBox(width: 18),
-          _buildMetricCard(
-            "Correct",
-            correct.toString(),
-            const Color(0xFF10B981),
-            Icons.check_circle_outline,
-          ),
-          const SizedBox(width: 18),
-          _buildMetricCard(
-            "Wrong",
-            wrong.toString(),
-            const Color(0xFFEF4444),
-            Icons.cancel_outlined,
-          ),
-          const SizedBox(width: 18),
-          _buildMetricCard(
-            "Accuracy",
-            "${percentage.toStringAsFixed(0)}%",
-            const Color(0xFFF59E0B),
-            Icons.trending_up,
-          ),
-          const SizedBox(width: 18),
-          _buildDonutChart(
-            percentage: percentage,
-            correct: stats['correct'] as int,
-            wrong: (stats['wrong'] as int) + stats['skipped'] as int,
-            skipped: 0,
-          )
-        ],
-      ),
+
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMetricCard(
+          "Total Questions",
+          total.toString(),
+          const Color(0xFF3B82F6),
+          Icons.quiz_outlined,
+        ),
+        const SizedBox(width: 18),
+        _buildMetricCard(
+          "Correct",
+          correct.toString(),
+          const Color(0xFF10B981),
+          Icons.check_circle_outline,
+        ),
+        const SizedBox(width: 18),
+        _buildMetricCard(
+          "Wrong",
+          wrong.toString(),
+          const Color(0xFFEF4444),
+          Icons.cancel_outlined,
+        ),
+        const SizedBox(width: 18),
+        _buildMetricCard(
+          "Accuracy",
+          "${percentage.toStringAsFixed(0)}%",
+          const Color(0xFFF59E0B),
+          Icons.trending_up,
+        ),
+        // const SizedBox(width: 18),
+        // SizedBox(
+        //   width: Get.width * 0.2,
+        //   child:   _buildDonutChart(
+        //     percentage: totalScore,
+        //     correct: stats['correct'] as int,
+        //     wrong: (stats['wrong'] as int) + stats['skipped'] as int,
+        //     skipped: 0,
+        //   ),
+        // )
+      ],
     );
   }
 
   Widget _buildMetricCard(
       String title, String value, Color color, IconData icon) {
-    return Container(
-      width: 200,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[600],
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -321,7 +324,9 @@ class TestAnalysisView extends StatelessWidget {
     final correct = stats['correct'] as int;
     final wrong = stats['wrong'] as int;
     final skipped = stats['skipped'] as int;
+    final report = controller.getPerformanceReport();
 
+    final totalScore = report["totalScore"];
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -348,43 +353,63 @@ class TestAnalysisView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          /// ===== CHART BARS =====
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildChartBar(
-                'Correct',
-                correct,
-                total,
-                const Color(0xFF10B981),
+              SizedBox(
+                width: Get.width * 0.2,
+                child:   _buildDonutChart(
+                  percentage: totalScore,
+                  correct: stats['correct'] as int,
+                  wrong: (stats['wrong'] as int) + stats['skipped'] as int,
+                  skipped: 0,
+                ),
               ),
-              _buildChartBar(
-                'Wrong',
-                wrong,
-                total,
-                const Color(0xFFEF4444),
-              ),
-              _buildChartBar(
-                'Skipped',
-                skipped,
-                total,
-                const Color(0xFFAB8F4A),
-              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    /// ===== CHART BARS =====
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                
+                        _buildChartBar(
+                          'Correct',
+                          correct,
+                          total,
+                          const Color(0xFF10B981),
+                        ),
+                        _buildChartBar(
+                          'Wrong',
+                          wrong,
+                          total,
+                          const Color(0xFFEF4444),
+                        ),
+                        _buildChartBar(
+                          'Skipped',
+                          skipped,
+                          total,
+                          const Color(0xFFAB8F4A),
+                        ),
+                      ],
+                    ),
+                
+                    const SizedBox(height: 24),
+                
+                    /// ===== LEGEND =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildLegendItem('Correct', const Color(0xFF10B981)),
+                        _buildLegendItem('Wrong', const Color(0xFFEF4444)),
+                        _buildLegendItem('Skipped', const Color(0xFFAB8F4A)),
+                      ],
+                    ),
+                  ],
+                ),
+              )
             ],
-          ),
-
-          const SizedBox(height: 24),
-
-          /// ===== LEGEND =====
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildLegendItem('Correct', const Color(0xFF10B981)),
-              _buildLegendItem('Wrong', const Color(0xFFEF4444)),
-              _buildLegendItem('Skipped', const Color(0xFFAB8F4A)),
-            ],
-          ),
+          )
         ],
       ),
     );
@@ -478,7 +503,7 @@ class TestAnalysisView extends StatelessWidget {
             children: [
               SizedBox(height: 8,),
               const Text(
-                'Performance Report',
+                'Performance Breakdown',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -933,11 +958,11 @@ class TestAnalysisView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${percentage.toStringAsFixed(0)}%',
+                  percentage.toStringAsFixed(0),
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 40,
                     fontWeight: FontWeight.w900,
-                    color: _getScoreColor(percentage),
+                    color: Colors.green,
                   ),
                 ),
                 const Text(

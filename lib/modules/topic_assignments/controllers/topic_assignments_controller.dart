@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -392,6 +394,69 @@ class TopicAssignmentsController extends GetxController {
     };
   }
 
+  List<String> _extractImageUrls(String html) {
+    final regex = RegExp(r'<img[^>]+src="([^">]+)"');
+    return regex.allMatches(html).map((m) => m.group(1)!).toList();
+  }
+
+  Future<String> _replaceImagesWithBase64(String html) async {
+    final urls = _extractImageUrls(html);
+
+    for (final url in urls) {
+      try {
+        final signedResponse = await _apiService.downloadQuestionImage(url);
+
+        if (signedResponse['status'] != true) continue;
+
+        final signedUrl = signedResponse['url'];
+
+        final bytes = await _apiService.downloadImageBytes(signedUrl);
+        final base64Str = base64Encode(bytes);
+
+        final extension = url.split('.').last.split('?').first;
+        final mimeType = extension.contains('png')
+            ? 'image/png'
+            : 'image/jpeg';
+
+        final base64Tag = 'data:$mimeType;base64,$base64Str';
+
+        html = html.replaceAll(url, base64Tag);
+      } catch (e) {
+        print("Image convert failed: $e");
+      }
+    }
+
+    return html;
+  }
+
+  Future<Map<String, dynamic>> _processQuestionImages(
+      Map<String, dynamic> response,
+      ) async {
+
+    final questions = response['data']?['questions'] ?? [];
+
+    for (var question in questions) {
+
+      // Process questionHtml
+      if (question['questionHtml'] != null) {
+        question['questionHtml'] =
+        await _replaceImagesWithBase64(question['questionHtml']);
+      }
+
+      // Process options
+      if (question['questionOptions'] != null) {
+        for (var option in question['questionOptions']) {
+          if (option['textHtml'] != null) {
+            option['textHtml'] =
+            await _replaceImagesWithBase64(option['textHtml']);
+          }
+        }
+      }
+    }
+
+    return response;
+  }
+
   // ============================================================
   // IMPROVED CIRCLE TAP WITH BETTER STORAGE HANDLING
   // ============================================================
@@ -520,7 +585,7 @@ class TopicAssignmentsController extends GetxController {
       final String academicYear = loginResponse['admissionNo'];
       final String entId = loginResponse['tenantId'];
 
-      final response = await _apiService.loadQuestions(
+      final rawResponse = await _apiService.loadQuestions(
         subject.name,
         classNo,
         testId,
@@ -528,9 +593,10 @@ class TopicAssignmentsController extends GetxController {
         entId,
       );
 
-      if (response == null) {
+      if (rawResponse == null) {
         throw Exception('API returned null response');
       }
+      final response = await _processQuestionImages(rawResponse);
 
       // =========================
       // 4️⃣ SAVE TO LOCAL STORAGE

@@ -8,7 +8,8 @@ import '../../../core/services/service_locator.dart';
 import '../../../data/services/store_service.dart';
 
 class LoginController extends GetxController {
-  final usernameController = TextEditingController(text: '1254642670001');
+  // final usernameController = TextEditingController(text: '9063642600002');
+  final usernameController = TextEditingController(text: '');
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 

@@ -669,7 +669,7 @@ class TestPlayerView extends StatelessWidget {
           child: Text(
             label,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),

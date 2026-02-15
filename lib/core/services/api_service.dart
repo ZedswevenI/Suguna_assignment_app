@@ -56,6 +56,21 @@ class ApiService {
     }
   }
 
+  Future<List<int>> downloadImageBytes(String url) async {
+    try {
+      final response = await _dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+        ),
+      );
+
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Map<String, dynamic> _handleResponse(Response response) {
     if (response.statusCode != null &&
         response.statusCode! >= 200 &&

@@ -347,6 +347,7 @@ class TestPlayerController extends GetxController {
     updateView();
   }
 
+
   void saveAndMarkForReview() {
     if (currentQuestion.selectedAnswer != null) {
       currentQuestion.status = QuestionStatus.answeredAndMarked;
@@ -357,11 +358,13 @@ class TestPlayerController extends GetxController {
   }
 
   void markForReviewAndNext() {
-    if (currentQuestion.selectedAnswer != null) {
-      currentQuestion.status = QuestionStatus.answeredAndMarked;
-    } else {
-      currentQuestion.status = QuestionStatus.markedForReview;
-    }
+    clearResponse();
+    currentQuestion.status = QuestionStatus.markedForReview;
+    // if (currentQuestion.selectedAnswer != null) {
+    //   currentQuestion.status = QuestionStatus.answeredAndMarked;
+    // } else {
+    //   currentQuestion.status = QuestionStatus.markedForReview;
+    // }
     _goToNextQuestion();
   }
 
