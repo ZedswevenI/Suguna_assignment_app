@@ -7,6 +7,7 @@ import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/services/sessions.dart';
+import '../controllers/assignment_questions_controller.dart';
 import '../controllers/test_player_controller.dart';
 import '../controllers/test_player_parser.dart';
 
@@ -14,35 +15,41 @@ import '../controllers/test_player_parser.dart';
 // TEST RESULT VIEW
 // ============================================================
 
-class TestResultView extends GetView<TestPlayerController> {
+class TestResultView extends StatelessWidget {
   const TestResultView({super.key});
   @override
   Widget build(BuildContext context) {
-    return AppLayout(
-      selectedRoute: '',
-      showBackButton: true,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7FA),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // _buildHeader(controller),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: _buildQuestionReview(controller),
-                    ),
-                    _buildSummaryPanel(controller),
-                  ],
+    return GetBuilder(
+        init: AssignmentQuestionsController(),
+        builder: (controller){
+      return AppLayout(
+        selectedRoute: '',
+        showBackButton: true,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF5F7FA),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // _buildHeader(controller),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _buildQuestionReview(controller),
+                      ),
+                      if(controller.categories.isNotEmpty)
+                      _buildSummaryPanel(controller),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
+
   }
 
   // ============================================================
@@ -134,37 +141,13 @@ class TestResultView extends GetView<TestPlayerController> {
                     const Color(0xFF6B7280),
                     Icons.remove_circle_outline_rounded,
                   ),
-                  // const SizedBox(width: 16),
-                  // _buildStatCard(
-                  //   'Time',
-                  //   stats['timeSpent'] as String,
-                  //   const Color(0xFF8B5CF6),
-                  //   Icons.timer_outlined,
-                  // ),
                 ],
               ),
             ),
 
             const SizedBox(width: 32),
-
-            // Actions
-            // Actions
             Row(
               children: [
-                // OutlinedButton.icon(
-                //   onPressed: () => _showRetestConfirmation(controller),
-                //   icon: const Icon(Icons.refresh_rounded, size: 20),
-                //   label: const Text('Retest'),
-                //   style: OutlinedButton.styleFrom(
-                //     foregroundColor: Colors.white,
-                //     side: const BorderSide(color: Colors.white),
-                //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(12),
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: () {
                     Get.back();
@@ -180,20 +163,6 @@ class TestResultView extends GetView<TestPlayerController> {
                     ),
                   ),
                 ),
-                // const SizedBox(width: 12),
-                // ElevatedButton.icon(
-                //   onPressed: () => _showSubmitConfirmation(controller),
-                //   icon: const Icon(Icons.send_rounded, size: 20),
-                //   label: const Text('Submit Results'),
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.white,
-                //     foregroundColor: AppColors.primary,
-                //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(12),
-                //     ),
-                //   ),
-                // ),
               ],
             ),
           ],
@@ -241,7 +210,7 @@ class TestResultView extends GetView<TestPlayerController> {
   // QUESTION REVIEW PANEL
   // ============================================================
 
-  Widget _buildQuestionReview(TestPlayerController controller) {
+  Widget _buildQuestionReview(AssignmentQuestionsController controller) {
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -261,7 +230,7 @@ class TestResultView extends GetView<TestPlayerController> {
           Expanded(
             child: Obx(() {
               final question = controller.currentReviewQuestion;
-              return _buildQuestionContent(controller, question);
+              return _buildQuestionContent(controller,question);
             }),
           ),
         ],
@@ -269,7 +238,7 @@ class TestResultView extends GetView<TestPlayerController> {
     );
   }
 
-  Widget _buildQuestionNavigator(TestPlayerController controller) {
+  Widget _buildQuestionNavigator(AssignmentQuestionsController controller) {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -299,6 +268,7 @@ class TestResultView extends GetView<TestPlayerController> {
             child: Obx(() {
               final allQuestions = controller.getAllQuestions();
               final currentIndex = controller.reviewIndex.value;
+              print("All ques  s ${controller.reviewIndex.value}");
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -381,7 +351,7 @@ class TestResultView extends GetView<TestPlayerController> {
     );
   }
 
-  Widget _buildQuestionContent(TestPlayerController controller, Question question) {
+  Widget _buildQuestionContent(AssignmentQuestionsController controller, Question question) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -433,7 +403,7 @@ class TestResultView extends GetView<TestPlayerController> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         _showReportQuestionDialog(
-                          controller,
+                          TestPlayerController.to,
                           question.questionId,
                           question.number,
                         );
@@ -457,12 +427,12 @@ class TestResultView extends GetView<TestPlayerController> {
                   ),
                   InkWell(
                     onTap: (){
-                      controller.toggleBookmark(question.questionId);
+                      TestPlayerController.to.toggleBookmark(question.questionId);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       decoration: BoxDecoration(
-                        color: controller.isBookmarked(question.questionId)
+                        color: TestPlayerController.to.isBookmarked(question.questionId)
                             ? const Color(0xFFEDE9FE)
                             : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(10),
@@ -471,19 +441,19 @@ class TestResultView extends GetView<TestPlayerController> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            controller.isBookmarked(question.questionId) ? Icons.bookmark : Icons.bookmark_border,
+                            TestPlayerController.to.isBookmarked(question.questionId) ? Icons.bookmark : Icons.bookmark_border,
                             size: 16,
-                            color: controller.isBookmarked(question.questionId)
+                            color: TestPlayerController.to.isBookmarked(question.questionId)
                                 ? const Color(0xFF7C3AED)
                                 : Colors.grey,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            controller.isBookmarked(question.questionId) ? "Bookmarked" : "Bookmark",
+                            TestPlayerController.to.isBookmarked(question.questionId) ? "Bookmarked" : "Bookmark",
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: controller.isBookmarked(question.questionId)
+                              color: TestPlayerController.to.isBookmarked(question.questionId)
                                   ? const Color(0xFF7C3AED)
                                   : Colors.grey,
                             ),
@@ -569,7 +539,7 @@ class TestResultView extends GetView<TestPlayerController> {
 
   Widget _buildMCQSingleReview(
       Question question,
-      TestPlayerController controller,
+      AssignmentQuestionsController controller,
       ) {
     return TeXView(
       key: UniqueKey(),
@@ -582,7 +552,7 @@ class TestResultView extends GetView<TestPlayerController> {
           TeXViewDocument(
             question.questionHtml ?? question.text,
             style: TeXViewStyle.fromCSS(
-              'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;',
+              'font-size:14px; margin-bottom:16px;',
             ),
           ),
           ...question.options.asMap().entries.map((entry) {
@@ -647,7 +617,7 @@ class TestResultView extends GetView<TestPlayerController> {
     <!-- OPTION TEXT -->
     <div style="
       flex:1;
-      font-size:${controller.getOptionFontSize()}px;
+      font-size:14px;
       font-weight:${isSelected ? '600' : '500'};
     ">
       $option
@@ -686,7 +656,7 @@ class TestResultView extends GetView<TestPlayerController> {
     );
   }
 
-  Widget _buildNumericalReview(TestPlayerController controller, Question question) {
+  Widget _buildNumericalReview(AssignmentQuestionsController controller, Question question) {
     final userAnswer = question.numericalAnswer?.toString() ?? 'Not Answered';
     final correctAnswer = controller.getCorrectAnswer(question);
     final isCorrect = controller.isQuestionCorrect(question);
@@ -700,7 +670,7 @@ class TestResultView extends GetView<TestPlayerController> {
     );
   }
 
-  Widget _buildTextReview(TestPlayerController controller, Question question) {
+  Widget _buildTextReview(AssignmentQuestionsController controller, Question question) {
     final userAnswer = question.textAnswer ?? 'Not Answered';
     final correctAnswer = controller.getCorrectAnswer(question);
 
@@ -756,7 +726,7 @@ class TestResultView extends GetView<TestPlayerController> {
     );
   }
 
-  Widget _buildSummaryPanel(TestPlayerController controller) {
+  Widget _buildSummaryPanel(AssignmentQuestionsController controller) {
     return Container(
       width: 350,
       margin: const EdgeInsets.fromLTRB(0, 20, 20, 20),
@@ -775,7 +745,10 @@ class TestResultView extends GetView<TestPlayerController> {
         final question = controller.currentReviewQuestion;
         final isCorrect = controller.isQuestionCorrect(question);
         final stats = controller.getTestStatistics();
-        final percentage = stats['percentage'] as double;
+        final report = controller.getPerformanceReport();
+
+        // final percentage = stats['percentage'] as double;
+        final percentage = report["totalScore"];
 
         return Column(
           children: [
@@ -851,7 +824,6 @@ class TestResultView extends GetView<TestPlayerController> {
                     //     ],
                     //   ),
                     // ),
-
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 24),
@@ -1061,11 +1033,11 @@ class TestResultView extends GetView<TestPlayerController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${percentage.toStringAsFixed(0)}%',
+                  percentage.toStringAsFixed(0),
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 40,
                     fontWeight: FontWeight.w900,
-                    color: _getScoreColor(percentage),
+                    color: Colors.green,
                   ),
                 ),
                 const Text(
@@ -1249,13 +1221,13 @@ class TestResultView extends GetView<TestPlayerController> {
                             return;
                           }
                           Get.back();
-                          // controller.reportQuestion(
-                          //   questionId: questionId,
-                          //   issueType: selectedIssue,
-                          //   comment: commentController.text.trim(),
-                          // );
 
 
+                          controller.reportQuestion(
+                            questionId: questionId,
+                            issueType: selectedIssue,
+                            comment: commentController.text.trim(),
+                          );
                           Get.snackbar(
                             "Reported",
                             "Question reported successfully",

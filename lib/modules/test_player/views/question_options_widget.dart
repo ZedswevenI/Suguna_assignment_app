@@ -692,7 +692,8 @@ class QuestionOptionsWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            controller.isLatex(question.questionHtml ?? "") ? TeXView(child:  TeXViewColumn(
+            controller.isLatex(question.questionHtml ?? "") ? TeXView(
+              child:  TeXViewColumn(
                 children: [
                   TeXViewDocument(question.questionHtml ?? "", style: TeXViewStyle.fromCSS(
                     'font-size:${controller

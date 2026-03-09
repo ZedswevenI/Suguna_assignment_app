@@ -26,6 +26,7 @@ class TopicModel {
 class SubtopicModel {
   final String id;
   final String name;
+  final String? phase;
   final List<AssignmentScore> orderedAssignments;
 
   /// Category -> SubCategory -> Assignments
@@ -33,6 +34,7 @@ class SubtopicModel {
 
   SubtopicModel({
     required this.id,
+    this.phase,
     required this.orderedAssignments,
     required this.name,
     required this.scores,

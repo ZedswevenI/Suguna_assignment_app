@@ -114,7 +114,7 @@ class HomeAssignmentsView extends GetView<HomeAssignmentsController> {
           ),
           const SizedBox(width: 12),
 
-          DropdownButtonHideUnderline(
+         if( controller.selectedAcademicYear.value != '' && controller.academicYears.isNotEmpty )DropdownButtonHideUnderline(
             child: Obx(() {
               return DropdownButton<String>(
                 value: controller.selectedAcademicYear.value,

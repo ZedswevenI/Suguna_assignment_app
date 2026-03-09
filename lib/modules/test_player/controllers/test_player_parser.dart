@@ -48,6 +48,8 @@ class QuestionCategory {
 }
 class Question {
   final int number;
+  final double positiveMarks;
+  final double negativeMarks;
   final String text;
   final String questionId;
   final QuestionType type;
@@ -87,7 +89,8 @@ class Question {
     this.correctAnswers,
     this.correctMatchAnswers,
     this.correctNumericalAnswer,
-
+    this.positiveMarks = 3,
+    this.negativeMarks = 1,
     this.selectedAnswer,
     this.selectedAnswers,
     this.matchAnswers,
@@ -185,6 +188,8 @@ class TestApiParser {
         final question = Question(
           questionId: qJson['questionId'] as String? ?? '',
           number: i + 1,
+          positiveMarks: _parseToDouble(qJson['positiveMarks'], defaultValue: 3),
+          negativeMarks: _parseToDouble(qJson['negativeMarks'], defaultValue: 1),
           text: qJson['questionText'] as String? ?? '',
           questionHtml: qJson['questionHtml'] as String?,
           type: parsedType,
@@ -227,6 +232,18 @@ class TestApiParser {
       print('Error parsing API response: $e');
       return [];
     }
+  }
+
+  static double _parseToDouble(dynamic value, {double defaultValue = 0}) {
+    if (value == null) return defaultValue;
+
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) {
+      return double.tryParse(value) ?? defaultValue;
+    }
+
+    return defaultValue;
   }
 
   static String _getCategoryNameFromType(QuestionType type) {

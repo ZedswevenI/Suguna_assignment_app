@@ -4,6 +4,7 @@ import 'package:suguna_assignment_app/modules/auth/bindings/login_binding.dart';
 import 'package:suguna_assignment_app/modules/auth/views/login_view.dart';
 import 'package:suguna_assignment_app/modules/home_assignments/bindings/home_assignments_binding.dart';
 import 'package:suguna_assignment_app/modules/home_assignments/views/home_assignments_view.dart';
+import 'package:suguna_assignment_app/modules/test_player/views/test_review_view.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/bindings/topic_assignments_binding.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/views/topic_assignments_view.dart';
 import 'package:suguna_assignment_app/modules/assignment_instructions/bindings/assignment_instructions_binding.dart';
@@ -55,6 +56,10 @@ class RouteConfig {
         name: AppRoutes.testAnalysis,
         page: () => const TestAnalysisView(),
         binding: TestAnalysisBinding(),
+      ),
+      GetPage(
+        name: AppRoutes.testReview,
+        page: () => const TestResultView(),
       ),
       GetPage(
         name: AppRoutes.questionReview,

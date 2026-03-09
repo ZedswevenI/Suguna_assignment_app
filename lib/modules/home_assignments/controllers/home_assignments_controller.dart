@@ -63,12 +63,13 @@ class HomeAssignmentsController extends GetxController {
     selectedAcademicYear.value = studentData['currentAcademicYear'] ?? '';
 
     // Class
-    final int classNo = studentData['classNo'];
+    final int classNo = studentData['classNo'] ?? 0;
     currentClass.value = 'Class $classNo';
 
     // Academic year history (dropdown)
     final List ayHistory = studentData['ayHistory'] ?? [];
 
+    print("Acacemic year ${academicYears}");
     academicYears.assignAll(
       ayHistory
           .map((e) => e['academicYear'].toString())

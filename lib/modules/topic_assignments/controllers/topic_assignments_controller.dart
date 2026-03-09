@@ -227,6 +227,7 @@ class TopicAssignmentsController extends GetxController {
           SubtopicModel(
             id: subtopic['subtopicId'],
             name: subtopic['subtopicName'],
+            phase: subtopic['phases'],
             scores: sortedScores,
             orderedAssignments: orderedList,
           ),

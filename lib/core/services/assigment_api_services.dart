@@ -1,4 +1,5 @@
 import '../../data/models/subject_model.dart';
+import '../../data/services/sessions.dart';
 import 'api_service.dart';
 
 /// API Service for Circulars Module
@@ -107,5 +108,37 @@ class AssignmentApiServices extends ApiService {
     );
   }
 
+
+  Future<dynamic> bookMarkQuestion(Map<String,dynamic> body) async {
+    return await post(
+      '/assignment/question/bookmark/create',
+      body: body,
+    );
+  }
+
+  Future<dynamic> removeBookmark(Map<String,dynamic> body) async {
+    return await post(
+      '/assignment/question/bookmark/remove',
+      body: body,
+    );
+  }
+
+  Future<dynamic> loadBookmarks() async {
+    return await post(
+      '/assignment/question/bookmark/list/?studentId=${Session.instance.currentUser!['data']['studentId']}',
+      body: {
+        "entiId": Session.instance.currentUser!['data']['tenantId']
+      },
+    );
+  }
+
+
+  Future<dynamic> reportQuestion(Map<String,dynamic> body) async {
+    return await post(
+      '/assignment/question/report/create',
+      body: body,
+    );
+  }
+  // assignment/question/bookmark/create
 
 }

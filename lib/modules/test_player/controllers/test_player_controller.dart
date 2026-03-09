@@ -8,6 +8,7 @@ import 'package:suguna_assignment_app/modules/test_player/controllers/test_playe
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/assigment_api_services.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../data/models/bookmarks.dart';
 import '../../../data/models/subject_model.dart';
 import '../../../data/services/network_service.dart';
 import '../../../data/services/store_service.dart';
@@ -38,6 +39,9 @@ class TestPlayerController extends GetxController {
   DateTime startedAt = DateTime.now();
   int totalReAttempts = 1;
 
+  final bookmarks = <Bookmark>[].obs;
+
+
   @override
   void onInit() {
     super.onInit();
@@ -57,19 +61,17 @@ class TestPlayerController extends GetxController {
           stored['testJson'],
         );
         selectedQuestions = stored['testJson'];
-        // correctAnswersMap = Map<String, dynamic>.from(stored['result']);
         final List answers = stored['result']['answers'] ?? [];
         for (var item in answers) {
           final questionNumber = item['questionNumber'];
           final correctAnswer = item['correctAnswer'];
-
           if (questionNumber != null && correctAnswer != null) {
             correctAnswersMap['question_$questionNumber'] = correctAnswer;
           }
         }
         _restoreUserAnswers(stored['result']['answers']);
         _loadBookmarks();
-        updateNewView();
+        update();
       } else {
         takeRetest();
         startedAt = DateTime.now();
@@ -559,7 +561,7 @@ class TestPlayerController extends GetxController {
   // Add these variables at the top with your other state variables:
   final reviewIndex = 0.obs;
   final isTestCompleted = false.obs;
-  Map<String, dynamic> correctAnswersMap = {}; // Will be populated from parser
+  Map<String, dynamic> correctAnswersMap = {};
 
   // ============================================================
   // RESULT & REVIEW METHODS
@@ -1062,27 +1064,30 @@ class TestPlayerController extends GetxController {
     int wrong = 0;
     int skipped = 0;
 
+    double totalMarks = 0;
+    double positiveMarks = 0;
+    double negativeMarks = 0;
+
     for (var question in allQuestions) {
+      totalMarks += question.positiveMarks;
       if (isQuestionSkipped(question)) {
         skipped++;
       } else if (isQuestionCorrect(question)) {
         correct++;
+        positiveMarks += question.positiveMarks;
       } else {
         wrong++;
+        negativeMarks += question.negativeMarks;
       }
     }
 
-    const double positiveMarkPerQuestion = 3.0;
-    const double negativeMarkPerQuestion = 1.0; // change if needed
-
-    final double positiveMarks = correct * positiveMarkPerQuestion;
-    final double negativeMarks = wrong * negativeMarkPerQuestion;
     final double totalScore = positiveMarks - negativeMarks;
     return {
       "totalQuestions": allQuestions.length,
       "correct": correct,
       "wrong": wrong,
       "skipped": skipped,
+      "totalMarks" : totalMarks,
       "positiveMarks": positiveMarks,
       "negativeMarks": negativeMarks,
       "totalScore": totalScore,
@@ -1093,21 +1098,150 @@ class TestPlayerController extends GetxController {
     return bookmarkedQuestions.contains(questionNumber);
   }
 
-  void _loadBookmarks() {
+  void initBookmarks(List<dynamic> apiData) {
+    loadLocalBookmarks();
+    loadApiBookmarks(apiData);
+  }
+
+  void loadApiBookmarks(List<dynamic> apiData) {
+    final apiBookmarks = apiData
+        .map((e) => e['questionId']?.toString())
+        .whereType<String>()
+        .toList();
+
+
+    // Merge without duplicates
+    final combined = {
+      ...bookmarkedQuestions,
+      ...apiBookmarks,
+    }.toList();
+
+    bookmarkedQuestions.assignAll(combined);
+
+    // Save merged to storage
+    storage.save('bookmarks_$currentTestId', combined);
+  }
+
+  void loadLocalBookmarks() {
     final stored = storage.read('bookmarks_$currentTestId');
+
     if (stored != null && stored is List) {
-      bookmarkedQuestions.assignAll(stored.map((e) => e.toString()).toList());
+      bookmarkedQuestions.assignAll(
+        stored.map((e) => e.toString()).toList(),
+      );
     }
   }
 
-  void toggleBookmark(String questionNumber) {
+  void _loadBookmarks() async {
+    final response = await _apiService.loadBookmarks();
+    final List<dynamic> data = response['data'];
+
+    final List<Bookmark> bookmark =
+    data.map((e) => Bookmark.fromJson(e)).toList();
+    bookmarks.value = bookmark;
+    initBookmarks(response['data']);
+  }
+
+  void toggleBookmark(String questionNumber) async {
     if (bookmarkedQuestions.contains(questionNumber)) {
-      bookmarkedQuestions.remove(questionNumber);
-    } else {
       bookmarkedQuestions.add(questionNumber);
+    final bookmark = bookmarks.firstWhereOrNull(
+          (b) => b.questionId == questionNumber,
+    );
+    final response = await _apiService.removeBookmark({
+      "entiId": Session.instance.currentUser!['data']['tenantId'],
+      "bookmarkId": bookmark?.bookmarkId ?? '',
+    });
+    if(response is Exception) {
+      Get.snackbar(
+        'Error',
+        response.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } else {
+      Get.snackbar(
+        'Success',
+        response['message'],
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+    bookmarkedQuestions.remove(questionNumber);
+    } else {
+
+    //  'testId': Session.instance.currentTestId.replaceAll("test_", ''),
+    // 'subjectId': Session.instance.selectedSubject?.id,
+    // 'classNo': Session.instance.currentUser!['data']['classNo'],
+    // 'admissionNo': Session.instance.currentUser!['data']['admissionNo'],
+    // 'entiId': Session.instance.currentUser!['data']['tenantId'],
+    // 'batchId': Session.instance.currentUser!['data']['batchId'],
+      bookmarkedQuestions.add(questionNumber);
+      final response = await _apiService.bookMarkQuestion({
+        "entiId": Session.instance.currentUser!['data']['tenantId'],
+        "studentId": Session.instance.currentUser!['data']['studentId'],
+        "questionId": questionNumber,
+        "assignmentId":Session.instance.currentTestId.replaceAll("test_", ''),//testId
+        "subjectId": Session.instance.selectedSubject?.id,
+        "note": "Tricky concept, revise before finals"
+      });
+      if(response is Exception) {
+        Get.snackbar(
+          'Error',
+          response.toString(),
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        Get.snackbar(
+          'Success',
+           response['message'],
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
     }
     storage.save('bookmarks_$currentTestId', bookmarkedQuestions.toList());
     updateNewView();
+  }
+
+  void  reportQuestion({required String questionId,required String issueType,required String comment,}) async {
+    final response = await _apiService.reportQuestion({
+      "entiId": Session.instance.currentUser!['data']['tenantId'],
+      "studentId": Session.instance.currentUser!['data']['studentId'],
+      "studentName": Session.instance.currentUser!['data']['name'],
+      "questionId": questionId,
+      "assignmentId":Session.instance.currentTestId.replaceAll("test_", ''),//testId
+      "issueType": 'WRONG_ANSWER',
+      "description": comment
+    });
+    if(response is Exception) {
+      Get.snackbar(
+        'Error',
+        response.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } else {
+      Get.snackbar(
+        'Success',
+        response['message'],
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
   }
 
   // ============================================================

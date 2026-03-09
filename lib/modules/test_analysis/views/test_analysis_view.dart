@@ -12,8 +12,8 @@ class TestAnalysisView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<TestPlayerController>(
-        id: "new",
+    return GetBuilder(
+        init: TestPlayerController(),
         builder: (controller){
       return PopScope(
         canPop: false,
@@ -23,7 +23,6 @@ class TestAnalysisView extends StatelessWidget {
             child: Column(
               children: [
                 _buildDashboardHeader(controller),
-                // Content
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
@@ -54,7 +53,7 @@ class TestAnalysisView extends StatelessWidget {
   // ============================================================
   Widget _buildDashboardHeader(TestPlayerController controller) {
     return Container(
-      color: const Color(0xFFD84040),
+      color: const Color(0xFFFF5C00),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         children: [
@@ -372,7 +371,7 @@ class TestAnalysisView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                
+
                         _buildChartBar(
                           'Correct',
                           correct,
@@ -393,9 +392,9 @@ class TestAnalysisView extends StatelessWidget {
                         ),
                       ],
                     ),
-                
+
                     const SizedBox(height: 24),
-                
+
                     /// ===== LEGEND =====
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -478,7 +477,7 @@ class TestAnalysisView extends StatelessWidget {
   Widget _buildPerformanceReport(TestPlayerController controller) {
     final report = controller.getPerformanceReport();
 
-    final totalQuestions = report["totalQuestions"] * 3;
+    final totalQuestions = report["totalMarks"];
     final correct = report["correct"];
     final wrong = report["wrong"];
     final positiveMarks = report["positiveMarks"];
@@ -495,7 +494,7 @@ class TestAnalysisView extends StatelessWidget {
         // const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1E3A8A),
+            color: const Color(0xFF009741),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -602,9 +601,10 @@ class TestAnalysisView extends StatelessWidget {
       String incorrect,
       String negative,
       ) {
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      color: const Color(0xFF2A5FBF),
+      color: const Color(0xFF22650B),
       child: Row(
         spacing: 12,
         children: [
@@ -695,13 +695,14 @@ class TestAnalysisView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: const BoxDecoration(
-            color: Color(0xFFE8A000),
+            color: Color(0xFF009741),
           ),
           child:  Text(
             '${Session.instance.selectedSubject?.name}',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
+
               color: Colors.white,
             ),
           ),
@@ -710,7 +711,7 @@ class TestAnalysisView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: const BoxDecoration(
-            color: Color(0xFFE8A000),
+            color: Color(0xFF009741),
           ),
           child: const Row(
             children: [
@@ -733,9 +734,9 @@ class TestAnalysisView extends StatelessWidget {
           if (isSkipped) {
             marks = 0;
           } else if (isCorrect) {
-            marks = 3.0;
+            marks = q.positiveMarks;
           } else {
-            marks = -1.0; // negative mark
+            marks = double.parse("-${q.negativeMarks}".toString());
           }
 
           return _buildQuestionRowDynamic(
@@ -761,7 +762,7 @@ class TestAnalysisView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: const BoxDecoration(
-        color: Color(0xFF1E4DA3),
+        color: Color(0xFF22650B),
       ),
       child: Row(
         spacing: 16,
@@ -812,8 +813,15 @@ class TestAnalysisView extends StatelessWidget {
             flex: 1,
             child: GestureDetector(
               onTap: () {
+                // controller.initData();
+                // print("Before navigation: ${controller.getAllQuestions().length}");
                 controller.goToReviewQuestion(question.number - 1);
-                Get.to(() => const TestResultView());
+                Get.toNamed(AppRoutes.testReview,arguments: {
+                  'index' : question.number - 1
+                });
+
+                // print("After navigation: ${controller.getAllQuestions().length}");
+                // controller.updateNewView();
               },
               child: const Text(
                 'View',

@@ -474,13 +474,26 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
           // Subtopic Name (Left Column)
           Expanded(
             flex: 1,
-            child: Text(
-              subtopic.name,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
+            child: Column(
+              spacing: 4,
+              children: [
+                if(subtopic.phase != null)Text(
+                  '( ${subtopic.phase ?? ''} )',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  subtopic.name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
           // Circles organized by Category and Subcategory
