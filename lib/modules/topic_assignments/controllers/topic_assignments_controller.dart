@@ -97,7 +97,7 @@ class TopicAssignmentsController extends GetxController {
       _scanAndPopulateCachedAssignments();
     } catch (e, s) {
       Get.snackbar('Error', 'Failed to load topics: $e');
-      print("Came to error ${e}");
+      print("Came to error ${s}");
     } finally {
       isLoading.value = false;
     }
@@ -147,6 +147,8 @@ class TopicAssignmentsController extends GetxController {
   }
 
   List<TopicModel> mapTopicsFromApi(Map<String, dynamic> response) {
+    print("Error ${ response['data']['subtopicsByTopics']}");
+
     final Map<String, dynamic> subtopicsByTopics =
         response['data']['subtopicsByTopics'];
 
