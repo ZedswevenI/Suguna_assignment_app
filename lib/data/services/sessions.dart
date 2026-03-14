@@ -22,4 +22,7 @@ class Session extends GetxController {
   String? selectedCategory;
   String currentTestId ='';
   bool isCompletedAssignment = false;
+  int currentClass = 0;
+
+
 }

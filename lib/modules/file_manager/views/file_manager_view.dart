@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:suguna_assignment_app/core/constants/app_constants.dart';
 import 'package:suguna_assignment_app/core/routes/app_routes.dart';
-import 'package:suguna_assignment_app/core/utils/responsive_helper.dart';
 import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import '../../../core/services/assigment_api_services.dart';
 import '../../../core/services/service_locator.dart';

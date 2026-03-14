@@ -53,7 +53,8 @@ class TopicAssignmentsController extends GetxController {
       final String academicYear =
           loginResponse['admissionNo']?.toString() ?? '';
       final String entId = loginResponse['tenantId']?.toString() ?? '';
-      final int classNo = loginResponse['classNo'] ?? '';
+      // final int classNo = loginResponse['classNo'] ?? '';
+      final int classNo = Session.instance.currentClass;
 
       // 🔑 Unique key per subject
       final String storageKey = "topics_${subject.id}_$classNo";
@@ -164,6 +165,7 @@ class TopicAssignmentsController extends GetxController {
               category: test['examCategory'] ?? '',
               subCategory: test['examSubCategory'] ?? '',
               assignment: AssignmentScore(
+                testNo: test['testNo'] ?? '',
                 cgpa: test['cgpa'] == null
                     ? null
                     : double.parse(test['cgpa'].toString()),
@@ -305,7 +307,6 @@ class TopicAssignmentsController extends GetxController {
 
     final bool isCompleted = isCompletedFromStorage || isCompletedFromCgpa;
 
-    print("IS comepletd ${isCompleted}");
     return isCompleted;
   }
 
@@ -472,7 +473,8 @@ class TopicAssignmentsController extends GetxController {
      String category,
   ) async {
     if (!canDownload) {
-      final int classNo = loginResponse['classNo'];
+      // loginResponse['classNo']
+      final int classNo = Session.instance.currentClass;
       final String academicYear = loginResponse['admissionNo'];
       final String entId = loginResponse['tenantId'];
       List<QuestionCategory> categories = [];
@@ -582,7 +584,8 @@ class TopicAssignmentsController extends GetxController {
       // =========================
       // 3️⃣ FETCH FROM API
       // =========================
-      final int classNo = loginResponse['classNo'];
+      // loginResponse['classNo']
+      final int classNo = Session.instance.currentClass;
       final String academicYear = loginResponse['admissionNo'];
       final String entId = loginResponse['tenantId'];
 

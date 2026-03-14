@@ -7,6 +7,7 @@ import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import 'package:suguna_assignment_app/modules/topic_assignments/controllers/topic_assignments_controller.dart';
 import '../../../core/widgets/score_circle.dart';
 import '../../../data/models/topic_model.dart';
+import '../../../data/services/sessions.dart';
 
 class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
   const TopicAssignmentsView({super.key});
@@ -16,7 +17,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
     return AppLayout(
       selectedRoute: AppRoutes.topicAssignments,
       subjectName: controller.subject.name,
-      classInfo: controller.subject.classInfo,
+      classInfo: "Class ${Session.instance.currentClass.toString()}",
       assignmentLabel: 'Assignment',
       showSidebar: false,
       showBackButton: true,
@@ -305,9 +306,9 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
     }
 
     // Sort subcategories for consistent ordering
-    structure.forEach((key, value) {
-      value.sort();
-    });
+    // structure.forEach((key, value) {
+    //   value.sort();
+    // });
 
     return structure;
   }
@@ -443,8 +444,6 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
   // ============================================================
 
   String _extractSubcategoryLabel(String subcategory) {
-    // Extract meaningful label from subcategory code
-    // E.g., "JEEMB" -> "JEEMB", "CBSEB" -> "CBSEB"
     return subcategory.length > 6 ? subcategory.substring(0, 6) : subcategory;
   }
 
@@ -528,6 +527,7 @@ class TopicAssignmentsView extends GetView<TopicAssignmentsController> {
                                   : Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: ModernAssignmentDot(
+                                  testNo : assignment.testNo,
                                   state: controller.getCircleState(
                                     subtopic.id,
                                     category,
@@ -717,6 +717,8 @@ class ModernAssignmentDot extends StatefulWidget {
   final AssignmentStatus? status;
   final ScoreLevel? scoreLevel;
   final double? score;
+  final String? testNo;
+
 
   const ModernAssignmentDot({
     super.key,
@@ -724,6 +726,7 @@ class ModernAssignmentDot extends StatefulWidget {
     required this.selected,
     required this.onTap,
     this.score,
+    this.testNo,
     this.status,
     this.scoreLevel,
   });
@@ -875,6 +878,7 @@ class _ModernAssignmentDotState extends State<ModernAssignmentDot>
                       ),
                   ],
                 ),
+                // child: Text(widget.testNo ?? ''),
                 child:  widget.scoreLevel != null && widget.score != null ? Center(
                   child: Text("${widget.score}",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 12),),
                 ) :   icon == null ? null : Center(child: icon),

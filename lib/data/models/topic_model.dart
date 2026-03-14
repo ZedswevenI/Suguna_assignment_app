@@ -55,6 +55,7 @@ class SubtopicModel {
 
 class AssignmentScore {
   final String testId,status;
+  final String testNo;
   final double? cgpa;
   final int sortOrder;
   final bool isEnabled;
@@ -62,6 +63,7 @@ class AssignmentScore {
     required this.testId,
     required this.sortOrder,
     required this.status,
+    required this.testNo,
     required this.isEnabled,
     this.cgpa
   });

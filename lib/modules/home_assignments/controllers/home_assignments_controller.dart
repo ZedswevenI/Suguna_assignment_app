@@ -20,7 +20,7 @@ class HomeAssignmentsController extends GetxController {
 
   // ===============================
   // STATE
-  // ===============================
+  // ===============================C
   final subjects = <SubjectModel>[].obs;
   final isLoading = false.obs;
 
@@ -39,7 +39,7 @@ class HomeAssignmentsController extends GetxController {
 
 
   final storage = Get.find<StorageService>();
-
+  final ayHistory = <Map<String, dynamic>>[].obs;
   // ===============================
   // LIFECYCLE
   // ===============================
@@ -59,23 +59,24 @@ class HomeAssignmentsController extends GetxController {
   // INITIAL SETUP
   // ===============================
   void _initStudentContext() {
-    // Academic year
     selectedAcademicYear.value = studentData['currentAcademicYear'] ?? '';
 
-    // Class
-    final int classNo = studentData['classNo'] ?? 0;
-    currentClass.value = 'Class $classNo';
+    final List history = studentData['ayHistory'] ?? [];
 
-    // Academic year history (dropdown)
-    final List ayHistory = studentData['ayHistory'] ?? [];
+    ayHistory.assignAll(List<Map<String, dynamic>>.from(history));
 
-    print("Acacemic year ${academicYears}");
     academicYears.assignAll(
-      ayHistory
-          .map((e) => e['academicYear'].toString())
-          .toSet()
-          .toList(),
+      ayHistory.map((e) => e['academicYear'].toString()).toList(),
     );
+
+    final current = ayHistory.firstWhereOrNull(
+          (e) => e['academicYear'] == selectedAcademicYear.value,
+    );
+
+    if (current != null) {
+      currentClass.value = 'Class ${current['classNo']}';
+      Session.instance.currentClass = current['classNo'];
+    }
   }
 
 
@@ -150,6 +151,16 @@ class HomeAssignmentsController extends GetxController {
     if (year == null || year == selectedAcademicYear.value) return;
 
     selectedAcademicYear.value = year;
+
+    final selected = ayHistory.firstWhereOrNull(
+          (e) => e['academicYear'] == year,
+    );
+
+    if (selected != null) {
+      currentClass.value = 'Class ${selected['classNo']}';
+      Session.instance.currentClass = selected['classNo'];
+    }
+
     selectedSubject.value = null;
     subjects.clear();
 
