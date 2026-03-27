@@ -688,7 +688,7 @@ class QuestionOptionsWidget extends StatelessWidget {
   Widget _buildTextType(Question question) {
     return GetBuilder<TestPlayerController>(
       builder: (controller) {
-
+        
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
