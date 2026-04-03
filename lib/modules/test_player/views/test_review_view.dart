@@ -7,7 +7,6 @@ import 'package:suguna_assignment_app/core/theme/app_colors.dart';
 import 'package:suguna_assignment_app/core/widgets/app_layout.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../data/services/sessions.dart';
-import '../controllers/assignment_questions_controller.dart';
 import '../controllers/test_player_controller.dart';
 import '../controllers/test_player_parser.dart';
 
@@ -19,37 +18,34 @@ class TestResultView extends StatelessWidget {
   const TestResultView({super.key});
   @override
   Widget build(BuildContext context) {
-    return GetBuilder(
-        init: AssignmentQuestionsController(),
-        builder: (controller){
-      return AppLayout(
-        selectedRoute: '',
-        showBackButton: true,
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF5F7FA),
-          body: SafeArea(
-            child: Column(
-              children: [
-                // _buildHeader(controller),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: _buildQuestionReview(controller),
-                      ),
-                      if(controller.categories.isNotEmpty)
-                      _buildSummaryPanel(controller),
-                    ],
-                  ),
+    final controller = TestPlayerController.to;
+    controller.goToReviewQuestion(Get.arguments['index']);
+    return AppLayout(
+      selectedRoute: '',
+      showBackButton: true,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // _buildHeader(controller),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildQuestionReview(controller),
+                    ),
+                    // if(controller.categories.isNotEmpty)
+                    _buildSummaryPanel(controller),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
-    });
-
+      ),
+    );
   }
 
   // ============================================================
@@ -210,7 +206,7 @@ class TestResultView extends StatelessWidget {
   // QUESTION REVIEW PANEL
   // ============================================================
 
-  Widget _buildQuestionReview(AssignmentQuestionsController controller) {
+  Widget _buildQuestionReview(TestPlayerController controller) {
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -238,7 +234,7 @@ class TestResultView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestionNavigator(AssignmentQuestionsController controller) {
+  Widget _buildQuestionNavigator(TestPlayerController controller) {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -351,7 +347,7 @@ class TestResultView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestionContent(AssignmentQuestionsController controller, Question question) {
+  Widget _buildQuestionContent(TestPlayerController controller, Question question) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -539,7 +535,7 @@ class TestResultView extends StatelessWidget {
 
   Widget _buildMCQSingleReview(
       Question question,
-      AssignmentQuestionsController controller,
+      TestPlayerController controller,
       ) {
     return TeXView(
       key: UniqueKey(),
@@ -656,7 +652,9 @@ class TestResultView extends StatelessWidget {
     );
   }
 
-  Widget _buildNumericalReview(AssignmentQuestionsController controller, Question question) {
+
+
+  Widget _buildNumericalReview(TestPlayerController controller, Question question) {
     final userAnswer = question.numericalAnswer?.toString() ?? 'Not Answered';
     final correctAnswer = controller.getCorrectAnswer(question);
     final isCorrect = controller.isQuestionCorrect(question);
@@ -670,7 +668,7 @@ class TestResultView extends StatelessWidget {
     );
   }
 
-  Widget _buildTextReview(AssignmentQuestionsController controller, Question question) {
+  Widget _buildTextReview(TestPlayerController controller, Question question) {
     final userAnswer = question.textAnswer ?? 'Not Answered';
     final correctAnswer = controller.getCorrectAnswer(question);
 
@@ -726,7 +724,7 @@ class TestResultView extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryPanel(AssignmentQuestionsController controller) {
+  Widget _buildSummaryPanel(TestPlayerController controller) {
     return Container(
       width: 350,
       margin: const EdgeInsets.fromLTRB(0, 20, 20, 20),
@@ -795,53 +793,9 @@ class TestResultView extends StatelessWidget {
                   children: [
                     _buildSummaryItem('Question Type', _getQuestionTypeName(question.type)),
                     _buildSummaryItem('Question Number', '${question.number}'),
-                    // _buildSummaryItem('Difficulty', 'Medium'),
-                    // Container(
-                    //   padding: const EdgeInsets.all(16),
-                    //   decoration: BoxDecoration(
-                    //     color: const Color(0xFFF8F9FC),
-                    //     borderRadius: BorderRadius.circular(12),
-                    //   ),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       const Text(
-                    //         'Your score',
-                    //         style: TextStyle(
-                    //           fontSize: 14,
-                    //           fontWeight: FontWeight.w600,
-                    //           color: Colors.grey,
-                    //         ),
-                    //       ),
-                    //       Text(
-                    //         isCorrect ? '+1' : '0',
-                    //         style: TextStyle(
-                    //           fontSize: 20,
-                    //           fontWeight: FontWeight.w900,
-                    //           color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 24),
-
-                    // const Text(
-                    //   'Your Performance',
-                    //   style: TextStyle(
-                    //     fontSize: 16,
-                    //     fontWeight: FontWeight.w700,
-                    //     color: AppColors.textPrimary,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
-                    //
-                    // _buildPerformanceBar('Correct', stats['correct'], const Color(0xFF10B981)),
-                    // _buildPerformanceBar('Wrong', stats['wrong'], const Color(0xFFEF4444)),
-                    // _buildPerformanceBar('Skipped', stats['skipped'], const Color(0xFF6B7280)),
-
                     // const SizedBox(height: 24),
                     Center(
                       child: _buildDonutChart(

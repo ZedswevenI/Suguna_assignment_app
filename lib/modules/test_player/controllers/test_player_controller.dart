@@ -24,7 +24,7 @@ class TestPlayerController extends GetxController {
   void updateNewView() => update(['new']);
 
   final textSize = 1.obs;
-  List<QuestionCategory> categories = [];
+  final categories = <QuestionCategory>[].obs;
   bool isLoading = true;
 
   final storage = Get.find<StorageService>();
@@ -57,7 +57,7 @@ class TestPlayerController extends GetxController {
         currentTestId = Session.instance.currentTestId;
         final stored = Session.instance.storedData!['storedData'];
         totalReAttempts = Session.instance.storedData!['storedData']['numberOfReattempts'] ?? 1;
-        categories = await TestApiParser.parseFromJsonString(
+        final parsed = await TestApiParser.parseFromJsonString(
           stored['testJson'],
         );
         selectedQuestions = stored['testJson'];
@@ -69,6 +69,8 @@ class TestPlayerController extends GetxController {
             correctAnswersMap['question_$questionNumber'] = correctAnswer;
           }
         }
+        // Assign categories last so Obx rebuilds with all data ready
+        categories.assignAll(parsed);
         _restoreUserAnswers(stored['result']['answers']);
         _loadBookmarks();
         update();
