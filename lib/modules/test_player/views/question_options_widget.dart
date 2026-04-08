@@ -314,13 +314,32 @@ class QuestionOptionsWidget extends StatelessWidget {
       Question question,
       TestPlayerController controller,
       ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // Matrix match: questionHtml contains the full matrix table with LaTeX.
+    // Left items: A, B, C, D  |  Right items: P, Q, R, S, T
+    final leftLabels = ['A', 'B', 'C', 'D'];
+    final rightLabels = ['P', 'Q', 'R', 'S', 'T'];
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
       children: [
+        // Render question HTML (contains the matrix table with LaTeX)
+        TeXView(
+          style: const TeXViewStyle(
+            backgroundColor: Colors.transparent,
+            padding: TeXViewPadding.all(0),
+          ),
+          child: TeXViewDocument(
+            question.questionHtml ?? '',
+            style: TeXViewStyle.fromCSS(
+              'font-size:${controller.getQuestionFontSize()}px; margin-bottom:16px;',
+            ),
+          ),
+        ),
+
         // Instruction
         Container(
-          padding: const EdgeInsets.all(12),
-          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
@@ -331,7 +350,7 @@ class QuestionOptionsWidget extends StatelessWidget {
                   color: AppColors.primary, size: 18),
               SizedBox(width: 8),
               Text(
-                'Match the following',
+                'Match each item on left to right',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -341,118 +360,66 @@ class QuestionOptionsWidget extends StatelessWidget {
             ],
           ),
         ),
-        Wrap(
-          spacing: 16,
-          children: question.matchPairs!.map((pair) {
-            final selectedValue = question.matchAnswers?[pair.left];
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Column(
+        // Matching rows: for each A, B, C, D show P, Q, R, S, T chips
+        ...leftLabels.map((left) {
+          final selectedRight = question.matchAnswers?[left];
 
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // LEFT ITEM
-                  Text(
-                    pair.left,
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left label badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    left,
                     style: TextStyle(
                       fontSize: controller.getOptionFontSize(),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(height: 12),
-
-                  // RIGHT OPTIONS (Chips)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: pair.rightOptions.map((option) {
-                      final isSelected = selectedValue == option;
-
-                      return ChoiceChip(
-                        label: Text(
-                          option,
-                          style: TextStyle(
-                            fontSize: controller.getOptionFontSize() - 1,
-                            color:
-                            isSelected ? Colors.white : AppColors.textPrimary,
-                          ),
+                ),
+                const SizedBox(height: 10),
+                // Right choices (P, Q, R, S, T)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: rightLabels.map((right) {
+                    final isSelected = selectedRight == right;
+                    return ChoiceChip(
+                      label: Text(
+                        right,
+                        style: TextStyle(
+                          fontSize: controller.getOptionFontSize() - 1,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
                         ),
-                        selected: isSelected,
-                        selectedColor: AppColors.primary,
-                        backgroundColor: Colors.grey.shade200,
-                        onSelected: (_) {
-                          controller.selectMatch(pair.left, option);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        )
-
-        // ...question.matchPairs!.map((pair) {
-        //   final selectedValue = question.matchAnswers?[pair.left];
-        //
-        //   return Container(
-        //     margin: const EdgeInsets.only(bottom: 12),
-        //     padding: const EdgeInsets.all(12),
-        //     decoration: BoxDecoration(
-        //       color: Colors.grey.shade50,
-        //       borderRadius: BorderRadius.circular(12),
-        //       border: Border.all(color: Colors.grey.shade300),
-        //     ),
-        //     child: Column(
-        //
-        //       crossAxisAlignment: CrossAxisAlignment.start,
-        //       children: [
-        //         // LEFT ITEM
-        //         Text(
-        //           pair.left,
-        //           style: TextStyle(
-        //             fontSize: controller.getOptionFontSize(),
-        //             fontWeight: FontWeight.w600,
-        //           ),
-        //         ),
-        //         const SizedBox(height: 12),
-        //
-        //         // RIGHT OPTIONS (Chips)
-        //         Wrap(
-        //           spacing: 8,
-        //           runSpacing: 8,
-        //           children: pair.rightOptions.map((option) {
-        //             final isSelected = selectedValue == option;
-        //
-        //             return ChoiceChip(
-        //               label: Text(
-        //                 option,
-        //                 style: TextStyle(
-        //                   fontSize: controller.getOptionFontSize() - 1,
-        //                   color:
-        //                   isSelected ? Colors.white : AppColors.textPrimary,
-        //                 ),
-        //               ),
-        //               selected: isSelected,
-        //               selectedColor: AppColors.primary,
-        //               backgroundColor: Colors.grey.shade200,
-        //               onSelected: (_) {
-        //                 controller.selectMatch(pair.left, option);
-        //               },
-        //             );
-        //           }).toList(),
-        //         ),
-        //       ],
-        //     ),
-        //   );
-        // }),
+                      ),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: Colors.grey.shade200,
+                      onSelected: (_) {
+                        controller.selectMatch(left, right);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }

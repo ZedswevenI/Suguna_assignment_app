@@ -280,16 +280,19 @@ class TestApiParser {
     }
   }
 
+
   // Parse question type from API string to enum
   static QuestionType _parseQuestionType(String apiType) {
     switch (apiType.toLowerCase()) {
       case 'mcq_single':
         return QuestionType.mcqSingle;
       case 'mcq_multiple':
+      case 'mcq_multi':
         return QuestionType.mcqMultiple;
       case 'match_the_following':
       case 'maq':
       case 'matrix':
+      case 'matrix_match':
         return QuestionType.matchTheFollowing;
       case 'integer':
       case 'numerical':

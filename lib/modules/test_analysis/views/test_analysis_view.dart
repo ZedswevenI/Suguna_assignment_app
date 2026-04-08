@@ -810,26 +810,59 @@ class TestAnalysisView extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 1,
-            child: GestureDetector(
-              onTap: () {
-                // controller.initData();
-                // print("Before navigation: ${controller.getAllQuestions().length}");
-                controller.goToReviewQuestion(question.number - 1);
-                Get.toNamed(AppRoutes.testReview,arguments: {
-                  'index' : question.number - 1
-                });
-
-                // print("After navigation: ${controller.getAllQuestions().length}");
-                // controller.updateNewView();
-              },
-              child: const Text(
-                'View',
-                style: TextStyle(
-                  color: Color(0xFF00D4FF),
-                  decoration: TextDecoration.underline,
+            flex: 2,
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    controller.showAnswer.value = true;
+                    controller.goToReviewQuestion(question.number - 1);
+                    Get.toNamed(AppRoutes.testReview, arguments: {
+                      'index': question.number - 1,
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'With Answer',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF10B981),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () {
+                    controller.showAnswer.value = false;
+                    controller.goToReviewQuestion(question.number - 1);
+                    Get.toNamed(AppRoutes.testReview, arguments: {
+                      'index': question.number - 1,
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color:  Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Without Answer',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

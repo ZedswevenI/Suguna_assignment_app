@@ -563,6 +563,7 @@ class TestPlayerController extends GetxController {
   // Add these variables at the top with your other state variables:
   final reviewIndex = 0.obs;
   final isTestCompleted = false.obs;
+  final showAnswer = true.obs;
   Map<String, dynamic> correctAnswersMap = {};
 
   // ============================================================

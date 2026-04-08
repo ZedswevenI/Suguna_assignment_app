@@ -264,8 +264,8 @@ class TestResultView extends StatelessWidget {
             child: Obx(() {
               final allQuestions = controller.getAllQuestions();
               final currentIndex = controller.reviewIndex.value;
-              print("All ques  s ${controller.reviewIndex.value}");
 
+              final showAns = controller.showAnswer.value;
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: allQuestions.length,
@@ -278,14 +278,18 @@ class TestResultView extends StatelessWidget {
                   Color bgColor;
                   IconData? icon;
 
-                  if (isSkipped) {
+                  if (!showAns) {
+                    bgColor = isSkipped
+                        ? const Color(0xFF6B7280)
+                        : const Color(0xFF2563EB);
+                    icon = null;
+                  } else if (isSkipped) {
                     bgColor = const Color(0xFF6B7280);
                     icon = Icons.remove_rounded;
                   } else if (isCorrect) {
                     bgColor = const Color(0xFF10B981);
                     icon = Icons.check_rounded;
                   } else {
-
                     bgColor = const Color(0xFFEF4444);
                     icon = Icons.close_rounded;
                   }
@@ -501,6 +505,11 @@ class TestResultView extends StatelessWidget {
             texText(question.questionHtml ?? '',fontSize: 14),
             SizedBox(height: 15,),
             _buildTextReview(controller, question),
+          ],
+          if (question.type == QuestionType.matchTheFollowing)...[
+            texText(question.questionHtml ?? '',fontSize: 14),
+            const SizedBox(height: 15),
+            _buildMatchTheFollowingReview(controller, question),
           ]
         ],
       ),
@@ -555,9 +564,10 @@ class TestResultView extends StatelessWidget {
             final index = entry.key;
             final option = entry.value;
             final label = String.fromCharCode(65 + index);
-            final isSelected = question.selectedAnswer == label;
-            final isCorrect = controller.isOptionCorrect(question, label);
-            final isUserWrong = isSelected && !isCorrect;
+            final showAns = controller.showAnswer.value;
+            final isSelected = showAns ? question.selectedAnswer == label : false;
+            final isCorrect = showAns ? controller.isOptionCorrect(question, label) : false;
+            final isUserWrong = showAns ? (isSelected && !controller.isOptionCorrect(question, label)) : false;
             // -------- Styling --------
             String border;
             String background;
@@ -643,6 +653,7 @@ class TestResultView extends StatelessWidget {
   </div>
   ''' : ''}
 
+
 </div>
 ''',
             );
@@ -656,27 +667,35 @@ class TestResultView extends StatelessWidget {
 
   Widget _buildNumericalReview(TestPlayerController controller, Question question) {
     final userAnswer = question.numericalAnswer?.toString() ?? 'Not Answered';
+    final showAns = controller.showAnswer.value;
     final correctAnswer = controller.getCorrectAnswer(question);
     final isCorrect = controller.isQuestionCorrect(question);
 
     return Column(
       children: [
-        _buildAnswerCard('Your Answer', userAnswer, isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444), false),
-        const SizedBox(height: 16),
-        _buildAnswerCard('Correct Answer', correctAnswer, const Color(0xFF10B981), true),
+        _buildAnswerCard('Your Answer', userAnswer, showAns
+            ? (isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+            : const Color(0xFF2563EB), false),
+        if (showAns) ...[
+          const SizedBox(height: 16),
+          _buildAnswerCard('Correct Answer', correctAnswer, const Color(0xFF10B981), true),
+        ],
       ],
     );
   }
 
   Widget _buildTextReview(TestPlayerController controller, Question question) {
     final userAnswer = question.textAnswer ?? 'Not Answered';
+    final showAns = controller.showAnswer.value;
     final correctAnswer = controller.getCorrectAnswer(question);
 
     return Column(
       children: [
         _buildAnswerCard('Your Answer', userAnswer, const Color(0xFF6366F1), false),
-        const SizedBox(height: 16),
-        _buildAnswerCard('Suggested Answer', correctAnswer, const Color(0xFF10B981), true),
+        if (showAns) ...[
+          const SizedBox(height: 16),
+          _buildAnswerCard('Suggested Answer', correctAnswer, const Color(0xFF10B981), true),
+        ],
       ],
     );
   }
@@ -724,6 +743,129 @@ class TestResultView extends StatelessWidget {
     );
   }
 
+  Widget _buildMatchTheFollowingReview(TestPlayerController controller, Question question) {
+    final showAns = controller.showAnswer.value;
+    final userAnswers = question.matchAnswers ?? {};
+    final correctAnswerStr = controller.getCorrectAnswer(question);
+    final correctAnswers = <String, String>{};
+    if (correctAnswerStr != 'N/A') {
+      for (var pair in correctAnswerStr.split(';')) {
+        final parts = pair.split(':');
+        if (parts.length == 2) {
+          correctAnswers[parts[0].trim()] = parts[1].trim();
+        }
+      }
+    }
+
+    if (question.matchPairs == null || question.matchPairs!.isEmpty) {
+      return const Text('No match pairs available');
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.compare_arrows_rounded, color: AppColors.primary, size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Match the following',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...question.matchPairs!.map((pair) {
+          final userSelected = userAnswers[pair.left];
+          final correctRight = correctAnswers[pair.left];
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    pair.left,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: pair.rightOptions.map((option) {
+                    final isUserSelected = showAns && userSelected == option;
+                    final isCorrectOption = showAns && correctRight == option;
+                    final isUserWrong = isUserSelected && !isCorrectOption;
+
+                    Color bgColor;
+                    Color textColor;
+                    Border? chipBorder;
+
+                    if (isCorrectOption) {
+                      bgColor = const Color(0xFF10B981);
+                      textColor = Colors.white;
+                    } else if (isUserWrong) {
+                      bgColor = const Color(0xFFEF4444);
+                      textColor = Colors.white;
+                    } else {
+                      bgColor = Colors.grey.shade200;
+                      textColor = AppColors.textPrimary;
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: chipBorder,
+                      ),
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
   Widget _buildSummaryPanel(TestPlayerController controller) {
     return Container(
       width: 350,
@@ -741,6 +883,7 @@ class TestResultView extends StatelessWidget {
       ),
       child: Obx(() {
         final question = controller.currentReviewQuestion;
+        final showAns = controller.showAnswer.value;
         final isCorrect = controller.isQuestionCorrect(question);
         final stats = controller.getTestStatistics();
         final report = controller.getPerformanceReport();
@@ -751,39 +894,72 @@ class TestResultView extends StatelessWidget {
         return Column(
           children: [
             // Result Badge
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isCorrect
-                      ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                      : [const Color(0xFFEF4444), const Color(0xFFDC2626)],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                    color: Colors.white,
-                    size: 24,
+            if (showAns)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isCorrect
+                        ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                        : [const Color(0xFFEF4444), const Color(0xFFDC2626)],
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    isCorrect ? 'Correct!' : 'Incorrect',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
                       color: Colors.white,
+                      size: 24,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Text(
+                      isCorrect ? 'Correct!' : 'Incorrect',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            if (!showAns)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.visibility_off_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Without Answer',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             Expanded(
               child: SingleChildScrollView(
@@ -793,18 +969,19 @@ class TestResultView extends StatelessWidget {
                   children: [
                     _buildSummaryItem('Question Type', _getQuestionTypeName(question.type)),
                     _buildSummaryItem('Question Number', '${question.number}'),
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 24),
-                    // const SizedBox(height: 24),
-                    Center(
-                      child: _buildDonutChart(
-                        percentage: percentage,
-                        correct: stats['correct'] as int,
-                        wrong: (stats['wrong'] as int) + stats['skipped'] as int,
-                        skipped: 0,
+                    if (showAns) ...[
+                      const SizedBox(height: 24),
+                      const Divider(),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: _buildDonutChart(
+                          percentage: percentage,
+                          correct: stats['correct'] as int,
+                          wrong: (stats['wrong'] as int) + stats['skipped'] as int,
+                          skipped: 0,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
