@@ -10,7 +10,7 @@ import '../../../data/services/store_service.dart';
 
 class LoginController extends GetxController {
   // final usernameController = TextEditingController(text: '9063642600002');
-  final usernameController = TextEditingController(text: kDebugMode ? '9020642590055' : '');
+  final usernameController = TextEditingController(text: kDebugMode ? '9062642370018' : '');
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
@@ -40,6 +40,18 @@ class LoginController extends GetxController {
   }
 
   void gotoLogin(BuildContext? context) async {
+    final enrolment = usernameController.text.trim();
+    if (enrolment.isEmpty) {
+      Get.snackbar(
+        'Enrolment number required',
+        'Please enter your enrolment number to login.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFDC2626),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
     isLoading.value = true;
     try {
       final response = await _apiService.login(usernameController.text);

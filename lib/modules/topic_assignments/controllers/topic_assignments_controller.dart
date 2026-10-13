@@ -180,10 +180,13 @@ class TopicAssignmentsController extends GetxController {
           );
         }
 
-        /// 🔥 Step 2: Sort all tests by sortOrder
-        allTests.sort(
-          (a, b) => a.assignment.sortOrder.compareTo(b.assignment.sortOrder),
-        );
+        /// 🔥 Step 2: Sort all tests by isEnabled (enabled first), then sortOrder
+        allTests.sort((a, b) {
+          final enabledCompare = (b.assignment.isEnabled ? 1 : 0)
+              .compareTo(a.assignment.isEnabled ? 1 : 0);
+          if (enabledCompare != 0) return enabledCompare;
+          return a.assignment.sortOrder.compareTo(b.assignment.sortOrder);
+        });
 
         /// 🔥 Step 3: Extract flat ordered list
         final orderedList = allTests.map((e) => e.assignment).toList();
@@ -198,10 +201,14 @@ class TopicAssignmentsController extends GetxController {
               .add(item.assignment);
         }
 
-        /// 🔥 Step 5: Sort assignments within each subcategory
+        /// 🔥 Step 5: Sort assignments within each subcategory (enabled first, then sortOrder)
         scores.forEach((category, subcategories) {
           subcategories.forEach((subCategory, assignments) {
-            assignments.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+            assignments.sort((a, b) {
+              final enabledCompare = (b.isEnabled ? 1 : 0).compareTo(a.isEnabled ? 1 : 0);
+              if (enabledCompare != 0) return enabledCompare;
+              return a.sortOrder.compareTo(b.sortOrder);
+            });
           });
         });
 
@@ -241,6 +248,17 @@ class TopicAssignmentsController extends GetxController {
       topics.add(
         TopicModel(id: categoryName, name: categoryName, subtopics: subtopics),
       );
+    });
+
+    // Sort topics: topics with any enabled assignment first, then by original order
+    topics.sort((a, b) {
+      final aHasEnabled = a.subtopics.any((s) =>
+          s.orderedAssignments.any((a) => a.isEnabled));
+      final bHasEnabled = b.subtopics.any((s) =>
+          s.orderedAssignments.any((a) => a.isEnabled));
+      if (aHasEnabled && !bHasEnabled) return -1;
+      if (!aHasEnabled && bHasEnabled) return 1;
+      return 0;
     });
 
     return topics;
@@ -398,61 +416,210 @@ class TopicAssignmentsController extends GetxController {
     };
   }
 
+  /// True if any question/option/passage/solution HTML in a stored paper
+  /// still references an image by URL (i.e. not yet embedded as `data:`).
+  bool _hasUnembeddedImages(Map<String, dynamic> response) {
+    final questions = response['data']?['questions'];
+    if (questions is! List) return false;
+    bool check(dynamic html) =>
+        html is String && _extractImageUrls(html).isNotEmpty;
+    for (final q in questions) {
+      if (q is! Map) continue;
+      // Attachments without an embedded dataUrl still need the network.
+      if (q['images'] is List) {
+        for (final im in q['images'] as List) {
+          if (im is Map &&
+              (im['url'] ?? '').toString().isNotEmpty &&
+              !(im['dataUrl'] ?? '').toString().startsWith('data:')) {
+            return true;
+          }
+        }
+      }
+      if (check(q['questionHtml']) || check(q['solutionHtml'])) return true;
+      final passage = q['passageData'];
+      if (passage is Map && check(passage['passageHtml'])) return true;
+      if (q['questionOptions'] is List) {
+        for (final o in q['questionOptions'] as List) {
+          if (o is Map && check(o['textHtml'])) return true;
+        }
+      }
+      for (final colKey in const ['leftColumn', 'rightColumn']) {
+        if (q[colKey] is List) {
+          for (final c in q[colKey] as List) {
+            if (c is Map && (check(c['text']) || check(c['textHtml']))) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   List<String> _extractImageUrls(String html) {
-    final regex = RegExp(r'<img[^>]+src="([^">]+)"');
-    return regex.allMatches(html).map((m) => m.group(1)!).toList();
+    // Quoted or unquoted src; skips already-embedded data URIs.
+    final regex = RegExp(
+      r'''<img[^>]+src\s*=\s*(?:["']([^"']+)["']|([^\s>]+))''',
+      caseSensitive: false,
+    );
+    return regex
+        .allMatches(html)
+        .map((m) => (m.group(1) ?? m.group(2) ?? '').trim())
+        .where((u) => u.isNotEmpty && !u.startsWith('data:'))
+        .toSet()
+        .toList();
+  }
+
+  /// `src` values are HTML-escaped (`&amp;` etc.) — decode before fetching.
+  String _decodeHtmlEntities(String url) => url
+      .replaceAll('&amp;', '&')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>');
+
+  String _mimeFromUrl(String url) {
+    final ext =
+        url.split('?').first.split('#').first.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      case 'svg':
+        return 'image/svg+xml';
+      case 'bmp':
+        return 'image/bmp';
+      default:
+        return 'image/jpeg';
+    }
   }
 
   Future<String> _replaceImagesWithBase64(String html) async {
     final urls = _extractImageUrls(html);
 
-    for (final url in urls) {
+    for (final rawUrl in urls) {
+      final url = _decodeHtmlEntities(rawUrl);
+      final base64Tag = await _fetchImageAsDataUri(url);
+      if (base64Tag == null) {
+        print('Image NOT embedded (will need internet to show): $url');
+        continue;
+      }
+      html = html.replaceAll(rawUrl, base64Tag);
+      if (rawUrl != url) html = html.replaceAll(url, base64Tag);
+    }
+    return html;
+  }
+
+  /// Downloads one image (signed URL first, then the original URL) and
+  /// returns it as a `data:` URI. Retries once on failure. Null on failure.
+  Future<String?> _fetchImageAsDataUri(String url) async {
+    for (var attempt = 1; attempt <= 2; attempt++) {
       try {
-        final signedResponse = await _apiService.downloadQuestionImage(url);
+        // 1. Ask the backend for a signed URL (any of the shapes it uses).
+        String? signedUrl;
+        try {
+          final signedResponse = await _apiService.downloadQuestionImage(url);
+          final ok = signedResponse['status'] == true ||
+              signedResponse['status']?.toString() == 'true' ||
+              signedResponse['success'] == true;
+          final returnedUrl =
+              (signedResponse['url'] ?? signedResponse['data']?['url'])
+                  ?.toString();
+          if (ok && returnedUrl != null && returnedUrl.isNotEmpty) {
+            signedUrl = returnedUrl;
+          }
+        } catch (e) {
+          print('Signed-url API failed for $url: $e');
+        }
 
-        if (signedResponse['status'] != true) continue;
-
-        final signedUrl = signedResponse['url'];
-
-        final bytes = await _apiService.downloadImageBytes(signedUrl);
-        final base64Str = base64Encode(bytes);
-
-        final extension = url.split('.').last.split('?').first;
-        final mimeType = extension.contains('png')
-            ? 'image/png'
-            : 'image/jpeg';
-
-        final base64Tag = 'data:$mimeType;base64,$base64Str';
-
-        html = html.replaceAll(url, base64Tag);
+        // 2. Fall back to the original URL if no signed URL came back.
+        final fetchUrl = signedUrl ?? url;
+        final bytes = await _apiService.downloadImageBytes(fetchUrl);
+        if (bytes.isEmpty) {
+          print('Image empty bytes for $fetchUrl (attempt $attempt)');
+          continue;
+        }
+        return 'data:${_mimeFromUrl(url)};base64,${base64Encode(bytes)}';
       } catch (e) {
-        print("Image convert failed: $e");
+        print('Image convert failed for $url (attempt $attempt): $e');
       }
     }
-
-    return html;
+    return null;
   }
 
   Future<Map<String, dynamic>> _processQuestionImages(
       Map<String, dynamic> response,
       ) async {
-
     final questions = response['data']?['questions'] ?? [];
 
     for (var question in questions) {
-
-      // Process questionHtml
-      if (question['questionHtml'] != null) {
+      // Question body
+      if (question['questionHtml'] is String &&
+          (question['questionHtml'] as String).isNotEmpty) {
         question['questionHtml'] =
-        await _replaceImagesWithBase64(question['questionHtml']);
+            await _replaceImagesWithBase64(question['questionHtml']);
       }
 
-      // Process options
-      if (question['questionOptions'] != null) {
-        for (var option in question['questionOptions']) {
-          if (option['textHtml'] != null) {
+      // Passage (comprehension) HTML
+      final passage = question['passageData'];
+      if (passage is Map &&
+          passage['passageHtml'] is String &&
+          (passage['passageHtml'] as String).isNotEmpty) {
+        passage['passageHtml'] =
+            await _replaceImagesWithBase64(passage['passageHtml']);
+      }
+
+      // Options
+      if (question['questionOptions'] is List) {
+        for (var option in (question['questionOptions'] as List)) {
+          if (option is Map &&
+              option['textHtml'] is String &&
+              (option['textHtml'] as String).isNotEmpty) {
             option['textHtml'] =
-            await _replaceImagesWithBase64(option['textHtml']);
+                await _replaceImagesWithBase64(option['textHtml']);
+          }
+        }
+      }
+
+      // Match-the-following columns
+      for (final colKey in const ['leftColumn', 'rightColumn']) {
+        if (question[colKey] is List) {
+          for (var cell in (question[colKey] as List)) {
+            if (cell is! Map) continue;
+            for (final key in const ['text', 'textHtml']) {
+              if (cell[key] is String && (cell[key] as String).isNotEmpty) {
+                cell[key] = await _replaceImagesWithBase64(cell[key]);
+              }
+            }
+          }
+        }
+      }
+
+      // Solution (shown in review)
+      if (question['solutionHtml'] is String &&
+          (question['solutionHtml'] as String).isNotEmpty) {
+        question['solutionHtml'] =
+            await _replaceImagesWithBase64(question['solutionHtml']);
+      }
+
+      // Attachment images (`images[]` with url/label/order, no <img> in the
+      // HTML). Embed each as `dataUrl` so it renders offline; the renderer
+      // appends them under the question text.
+      if (question['images'] is List) {
+        for (var im in (question['images'] as List)) {
+          if (im is! Map) continue;
+          final url = (im['url'] ?? '').toString();
+          if (url.isEmpty) continue;
+          final existing = (im['dataUrl'] ?? '').toString();
+          if (existing.startsWith('data:')) continue;
+          final dataUrl = await _fetchImageAsDataUri(url);
+          if (dataUrl != null) {
+            im['dataUrl'] = dataUrl;
+          } else {
+            print('Attachment image NOT embedded: $url');
           }
         }
       }
@@ -554,7 +721,24 @@ class TopicAssignmentsController extends GetxController {
 
       // Try to read stored test data
       if (cachedQuestions != null) {
-        selectedQuestions = cachedQuestions;
+        var questions = Map<String, dynamic>.from(cachedQuestions);
+
+        // Papers cached by older builds still carry raw (private) S3 image
+        // URLs instead of embedded data URIs — S3 answers those with 403, so
+        // the pictures never show. If we're online, embed them now and
+        // re-save; the questions themselves don't need re-downloading.
+        if (_hasUnembeddedImages(questions) &&
+            await NetworkService.hasInternet()) {
+          try {
+            questions = await _processQuestionImages(questions);
+            _saveToStorage(questionsStorageKey, questions);
+            print('Repaired cached images for $questionsStorageKey');
+          } catch (e) {
+            print('Cached image repair failed for $questionsStorageKey: $e');
+          }
+        }
+
+        selectedQuestions = questions;
 
         // ✅ Add to downloaded set if not already there
         if (!downloadedSubtopicIds.contains(key)) {

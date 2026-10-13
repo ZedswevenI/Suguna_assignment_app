@@ -57,17 +57,27 @@ class ApiService {
   }
 
   Future<List<int>> downloadImageBytes(String url) async {
+    // Use a clean Dio instance for S3/signed-URL fetches — the main _dio has
+    // baseUrl + JSON Accept/Content-Type headers that make S3 reject the
+    // request, which is why question images were never embedded.
+    final dio = Dio(BaseOptions(
+      connectTimeout: AppConstants.timeout,
+      receiveTimeout: AppConstants.timeout,
+      followRedirects: true,
+    ));
     try {
-      final response = await _dio.get(
+      final response = await dio.get<List<int>>(
         url,
         options: Options(
           responseType: ResponseType.bytes,
+          headers: {'Accept': '*/*'},
         ),
       );
-
-      return response.data;
+      return response.data ?? const [];
     } on DioException catch (e) {
       throw _handleDioError(e);
+    } finally {
+      dio.close(force: true);
     }
   }
 

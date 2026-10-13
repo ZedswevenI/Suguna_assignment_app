@@ -45,7 +45,7 @@ class AssignmentApiServices extends ApiService {
         body: {
           "entiId":entId,
           "regNo": regNo,
-          "testId": testId,
+          "testId": "aa7b4cb3-7e94-4885-b9df-366ff03afc58",
           "subjectId": subjectName,
           "classNo":classNo
         },

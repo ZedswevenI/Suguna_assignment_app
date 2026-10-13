@@ -191,7 +191,8 @@ class TestApiParser {
           positiveMarks: _parseToDouble(qJson['positiveMarks'], defaultValue: 3),
           negativeMarks: _parseToDouble(qJson['negativeMarks'], defaultValue: 1),
           text: qJson['questionText'] as String? ?? '',
-          questionHtml: qJson['questionHtml'] as String?,
+          questionHtml: withAttachedImages(
+              qJson, qJson['questionHtml'] as String? ?? ''),
           type: parsedType,
           options: _parseOptions(
             qJson['questionOptions'] as List<dynamic>? ?? [],
@@ -353,6 +354,35 @@ class TestApiParser {
         .replaceAll('cot−1', r'\cot^{-1}')
         .replaceAll('sec−1', r'\sec^{-1}')
         .replaceAll('cosec−1', r'\cosec^{-1}');
+  }
+
+
+  /// Questions may carry pictures as attachments in `images[]`
+  /// (`{url, dataUrl?, label, order}`) with no `<img>` in the HTML at all.
+  /// Append them under the question text so every renderer shows them.
+  /// Prefers the embedded `dataUrl` (works offline); skips an attachment
+  /// whose URL is already referenced inline to avoid showing it twice.
+  static String withAttachedImages(Map<String, dynamic> qJson, String html) {
+    final images = qJson['images'];
+    if (images is! List || images.isEmpty) return html;
+    final entries = <Map>[];
+    for (final im in images) {
+      if (im is Map) entries.add(im);
+    }
+    entries.sort((a, b) =>
+        ((a['order'] as num?) ?? 0).compareTo((b['order'] as num?) ?? 0));
+    final buf = StringBuffer(html);
+    for (final im in entries) {
+      final url = (im['url'] ?? '').toString();
+      final src = (im['dataUrl'] ?? url).toString();
+      if (src.isEmpty) continue;
+      if (url.isNotEmpty && html.contains(url)) continue;
+      buf.write(
+        '<div style="margin:12px 0;"><img src="$src" '
+        'style="max-width:100%;height:auto;display:block;"></div>',
+      );
+    }
+    return buf.toString();
   }
 
 }
